@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Cooks Edge Shiro Kamo Santoku",
+    "checker": "cooksEdgeChecker",
+    "url": "https://thecooksedge.com/search?q=shiro+kamo&options%5Bprefix%5D=last&sort_by=relevance&filter.v.availability=1&filter.v.price.gte=&filter.v.price.lte=",
+    "regexFilter": "(?i).*\\s+AS.+santoku.*"
+  },
+  {
+    "name": "Sharp Knife Shop Shiro Kamo Santoku",
+    "checker": "sharpKnifeShopChecker",
+    "url": "https://sharpknifeshop.com/search?type=product&q=shiro+kamo&filter.p.m.custom.knife_type_=Santoku"
+  },
+  {
+    "name": "Stay Sharp Shiro Kamo Santoku",
+    "checker": "staySharpChecker",
+    "url": "https://staysharpmtl.com/en/search?type=product&options[prefix]=last&q=shiro+kamo&filter.p.product_type=Santoku&filter.v.availability=1",
+    "regexFilter": "(?i).*(aogami|blue).*"
+  }
+]
