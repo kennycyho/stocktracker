@@ -1,6 +1,10 @@
 package org.example.notifier;
 
-public interface StockNotifier {
+import org.example.model.Item;
 
-    void send(String title, String body);
+import java.util.List;
+
+public interface StockNotifier {
+    
+    void send(String title, List<Item> itemList);
 }

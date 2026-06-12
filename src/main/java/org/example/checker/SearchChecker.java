@@ -35,7 +35,7 @@ public abstract class SearchChecker implements StockChecker {
             LOGGER.info("Found items for product " + checkerConfig.name());
             stockNotifier.send(
                     checkerConfig.name() + " is in stock with " + itemList.size() + " items",
-                    buildBody(itemList));
+                    itemList);
         }
     }
 
@@ -49,15 +49,5 @@ public abstract class SearchChecker implements StockChecker {
         else {
             return unfilteredItemList;
         }
-    }
-
-    private String buildBody(List<Item> items) {
-        StringBuilder sb = new StringBuilder();
-        for (Item item : items) {
-            sb.append(item.name())
-                    .append(": ").append(item.url())
-                    .append("\n");
-        }
-        return sb.toString();
     }
 }
