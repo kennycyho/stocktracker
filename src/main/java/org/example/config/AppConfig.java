@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @EnableScheduling
@@ -38,7 +39,9 @@ public class AppConfig {
                 "staySharpChecker", c -> new StaySharpChecker(fetcher, notifier, c)
         );
         return configs.stream()
-                .map(c -> factories.get(c.checker()).apply(c))
+                .map(c -> Optional.ofNullable(factories.get(c.checker()))
+                        .orElseThrow(() -> new IllegalArgumentException("Unknown checker: " + c.checker()))
+                        .apply(c))
                 .toList();
     }
 }

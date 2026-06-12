@@ -1,5 +1,7 @@
 package org.example.fetcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,7 +14,7 @@ import java.time.Duration;
 @Service
 public class HttpFetcher {
 
-    private static final System.Logger logger = System.getLogger(HttpFetcher.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(HttpFetcher.class);
 
     private final HttpClient client;
 
@@ -32,12 +34,11 @@ public class HttpFetcher {
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
-                logger.log(System.Logger.Level.ERROR, String.format(
-                        "Page returned status: %d. Url: %s", response.statusCode(), url));
+                logger.error("Page returned status: {}. Url: {}", response.statusCode(), url);
             }
         }
         catch (IOException | InterruptedException e) {
-            logger.log(System.Logger.Level.ERROR, "Url could not be fetched: " + url, e);
+            logger.error("Url could not be fetched: {}", url, e);
         }
         return response;
     }

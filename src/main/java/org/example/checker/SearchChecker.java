@@ -4,9 +4,10 @@ import org.example.fetcher.HttpFetcher;
 import org.example.model.CheckerConfig;
 import org.example.model.Item;
 import org.example.notifier.StockNotifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Checks stock from search results page.
@@ -14,7 +15,7 @@ import java.util.logging.Logger;
 
 public abstract class SearchChecker implements StockChecker {
 
-    private static final Logger LOGGER = Logger.getLogger(SearchChecker.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchChecker.class);
 
     protected final HttpFetcher httpFetcher;
     protected final StockNotifier stockNotifier;
@@ -32,7 +33,7 @@ public abstract class SearchChecker implements StockChecker {
     public void check() {
         List<Item> itemList = getFilteredItemList();
         if (!itemList.isEmpty()) {
-            LOGGER.info("Found items for product " + checkerConfig.name());
+            LOGGER.info("Found items for product {}", checkerConfig.name());
             stockNotifier.send(
                     checkerConfig.name() + " is in stock with " + itemList.size() + " items",
                     itemList);

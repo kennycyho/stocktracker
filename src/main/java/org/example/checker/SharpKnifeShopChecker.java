@@ -42,7 +42,7 @@ public class SharpKnifeShopChecker extends SearchChecker {
         }
 
         try {
-            Element collection = doc.selectFirst("div[class=#collection-grid]");
+            Element collection = doc.selectFirst("div[class=collection-grid]");
             Elements products = collection.select("a.stretched-link");
             for (Element product : products) {
                 try {
@@ -51,7 +51,7 @@ public class SharpKnifeShopChecker extends SearchChecker {
                     unfilteredItemList.add(new Item(text, href));
                 }
                 catch (NullPointerException e) {
-                    LOGGER.log(System.Logger.Level.ERROR, "Could not get href or title for product");
+                    LOGGER.log(System.Logger.Level.ERROR, "Could not get href or title for product", e);
                 }
             }
         }
