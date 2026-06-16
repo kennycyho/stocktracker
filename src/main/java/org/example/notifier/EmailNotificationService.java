@@ -13,7 +13,7 @@ public class EmailNotificationService implements StockNotifier {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${app.notifier.recipient}")
     private String recipientEmail;
 
     public EmailNotificationService(JavaMailSender mailSender) {
