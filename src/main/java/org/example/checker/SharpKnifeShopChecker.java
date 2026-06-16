@@ -42,7 +42,7 @@ public class SharpKnifeShopChecker extends SearchChecker {
         }
 
         try {
-            Element collection = doc.selectFirst("div[class=collection-grid]");
+            Element collection = doc.selectFirst("div[class=#collection-grid]");
             Elements products = collection.select("a.stretched-link");
             for (Element product : products) {
                 try {
