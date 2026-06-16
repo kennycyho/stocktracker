@@ -8,6 +8,6 @@ public abstract class ProductChecker implements StockChecker {
 
     @Override
     public void check() {
-
+        throw new UnsupportedOperationException();
     }
 }
