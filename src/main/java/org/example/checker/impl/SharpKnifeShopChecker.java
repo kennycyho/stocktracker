@@ -9,6 +9,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpResponse;
@@ -22,7 +24,7 @@ import java.util.List;
 
 public class SharpKnifeShopChecker extends AbstractChecker {
 
-    private static final System.Logger LOGGER = System.getLogger(SharpKnifeShopChecker.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SharpKnifeShopChecker.class.getName());
 
     public SharpKnifeShopChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         super(httpFetcher, notifier, checkerConfig);
@@ -33,32 +35,34 @@ public class SharpKnifeShopChecker extends AbstractChecker {
         Document doc = Jsoup.parse(response.body());
         doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
 
-        Element title = doc.selectXpath("head/title").first();
-        if (title != null) {
-            String text = title.text();
-            if (text.contains("0 result")) {
-                return unfilteredItemList;
-            }
+        if (!hasSearchResults(doc)) return unfilteredItemList;
+
+        Element collection = doc.selectFirst("div[class=#collection-grid]");
+        if (collection == null) {
+            LOGGER.error("Could not get collection element");
+            return unfilteredItemList;
         }
 
-        try {
-            Element collection = doc.selectFirst("div[class=#collection-grid]");
-            Elements products = collection.select("a.stretched-link");
-            for (Element product : products) {
-                try {
-                    String href = product.absUrl("href");
-                    String text = product.text();
-                    unfilteredItemList.add(new Item(text, href));
-                }
-                catch (NullPointerException e) {
-                    LOGGER.log(System.Logger.Level.ERROR, "Could not get href or title for product", e);
-                }
+        Elements products = collection.select("a.stretched-link");
+        for (Element product : products) {
+            String href = product.absUrl("href");
+            String text = product.text();
+            if (text.isBlank()) {
+                LOGGER.error("Could not get title for product: {}", product.outerHtml());
             }
+            else unfilteredItemList.add(new Item(text, href));
         }
-        catch (NullPointerException e) {
-            LOGGER.log(System.Logger.Level.ERROR, "Element could not be found, source changed", e);
-        }
+
         return unfilteredItemList;
     }
 
+    private boolean hasSearchResults(Document doc) {
+        Element title = doc.selectXpath("head/title").first();
+        if (title != null) {
+            String text = title.text();
+            return !text.contains("0 result");
+        }
+        else LOGGER.error("Could not get page title");
+        return true;
+    }
 }

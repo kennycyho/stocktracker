@@ -9,6 +9,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpResponse;
@@ -22,7 +24,7 @@ import java.util.List;
 
 public class StaySharpChecker extends AbstractChecker {
 
-    private static final System.Logger LOGGER = System.getLogger(StaySharpChecker.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StaySharpChecker.class.getName());
 
     public StaySharpChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         super(httpFetcher, notifier, checkerConfig);
@@ -35,19 +37,19 @@ public class StaySharpChecker extends AbstractChecker {
 
         Elements products = doc.select("div[data-product-grid]");
         if (!products.isEmpty()) {
-            for (Element product : products.asList()) {
+            for (Element product : products) {
                 Element titleText = product.selectFirst("a[class=yv-product-title text]");
-                try {
+                if (titleText != null) {
                     String href = titleText.absUrl("href");
                     String title = titleText.attr("title");
                     unfilteredItemList.add(new Item(title, href));
                 }
-                catch (NullPointerException e) {
-                    LOGGER.log(System.Logger.Level.ERROR, "Could not get href or title for product", e);
+                else {
+                    LOGGER.error("Could not get details for product: {}", product.outerHtml());
                 }
             }
         }
         return unfilteredItemList;
     }
-
+    
 }
