@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.dto;
 
 public record Item(String name, String url) {
 

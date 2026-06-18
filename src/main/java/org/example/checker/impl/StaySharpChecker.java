@@ -1,9 +1,9 @@
 package org.example.checker.impl;
 
 import org.example.checker.AbstractChecker;
+import org.example.dto.CheckerConfig;
+import org.example.dto.Item;
 import org.example.fetcher.HttpFetcher;
-import org.example.model.CheckerConfig;
-import org.example.model.Item;
 import org.example.notifier.Notifier;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -51,5 +51,5 @@ public class StaySharpChecker extends AbstractChecker {
         }
         return unfilteredItemList;
     }
-    
+
 }

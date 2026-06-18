@@ -1,6 +1,6 @@
 package org.example.notifier.impl;
 
-import org.example.model.Item;
+import org.example.dto.Item;
 import org.example.notifier.Notifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;

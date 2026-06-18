@@ -1,8 +1,8 @@
 package org.example.checker;
 
+import org.example.dto.CheckerConfig;
+import org.example.dto.Item;
 import org.example.fetcher.HttpFetcher;
-import org.example.model.CheckerConfig;
-import org.example.model.Item;
 import org.example.notifier.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
