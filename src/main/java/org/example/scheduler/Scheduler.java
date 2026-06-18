@@ -1,6 +1,6 @@
 package org.example.scheduler;
 
-import org.example.checker.StockChecker;
+import org.example.checker.Checker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,15 +13,15 @@ public class Scheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class);
 
-    private final List<StockChecker> checkers;
+    private final List<Checker> checkers;
 
-    public Scheduler(List<StockChecker> checkers) {
+    public Scheduler(List<Checker> checkers) {
         this.checkers = checkers;
     }
 
     @Scheduled(fixedDelayString = "${checker.interval-ms}")
     public void runChecks() {
-        for (StockChecker checker : checkers) {
+        for (Checker checker : checkers) {
             LOGGER.info("Running checker: {}", checker.getClass().getSimpleName());
             checker.check();
         }

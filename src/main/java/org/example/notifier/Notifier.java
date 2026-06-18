@@ -4,7 +4,7 @@ import org.example.model.Item;
 
 import java.util.List;
 
-public interface StockNotifier {
+public interface Notifier {
     
     void send(String title, List<Item> itemList);
 }

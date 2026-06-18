@@ -2,13 +2,13 @@ package org.example.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.checker.CooksEdgeChecker;
-import org.example.checker.SharpKnifeShopChecker;
-import org.example.checker.StaySharpChecker;
-import org.example.checker.StockChecker;
+import org.example.checker.Checker;
+import org.example.checker.impl.CooksEdgeChecker;
+import org.example.checker.impl.SharpKnifeShopChecker;
+import org.example.checker.impl.StaySharpChecker;
 import org.example.fetcher.HttpFetcher;
 import org.example.model.CheckerConfig;
-import org.example.notifier.StockNotifier;
+import org.example.notifier.Notifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 public class AppConfig {
 
     @Bean
-    public List<StockChecker> checkers(ObjectMapper mapper, HttpFetcher fetcher, StockNotifier notifier)
+    public List<Checker> checkers(ObjectMapper mapper, HttpFetcher fetcher, Notifier notifier)
             throws IOException {
         List<CheckerConfig> configs = mapper.readValue(
                 new ClassPathResource("checkers.json").getInputStream(),
@@ -33,7 +33,7 @@ public class AppConfig {
                 }
         );
 
-        Map<String, Function<CheckerConfig, StockChecker>> factories = Map.of(
+        Map<String, Function<CheckerConfig, Checker>> factories = Map.of(
                 "cooksEdgeChecker", c -> new CooksEdgeChecker(fetcher, notifier, c),
                 "sharpKnifeShopChecker", c -> new SharpKnifeShopChecker(fetcher, notifier, c),
                 "staySharpChecker", c -> new StaySharpChecker(fetcher, notifier, c)

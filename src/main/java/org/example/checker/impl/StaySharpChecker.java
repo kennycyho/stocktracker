@@ -1,9 +1,10 @@
-package org.example.checker;
+package org.example.checker.impl;
 
+import org.example.checker.AbstractChecker;
 import org.example.fetcher.HttpFetcher;
 import org.example.model.CheckerConfig;
 import org.example.model.Item;
-import org.example.notifier.StockNotifier;
+import org.example.notifier.Notifier;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,18 +20,16 @@ import java.util.List;
  * Client-side regex filter can be applied to further filter the ItemsList.
  */
 
-public class StaySharpChecker extends SearchChecker {
+public class StaySharpChecker extends AbstractChecker {
 
     private static final System.Logger LOGGER = System.getLogger(StaySharpChecker.class.getName());
 
-    public StaySharpChecker(HttpFetcher httpFetcher, StockNotifier stockNotifier, CheckerConfig checkerConfig) {
-        super(httpFetcher, stockNotifier, checkerConfig);
+    public StaySharpChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
+        super(httpFetcher, notifier, checkerConfig);
     }
 
-    public List<Item> getUnfilteredItemList() {
+    public List<Item> getUnfilteredItemList(HttpResponse<String> response) {
         List<Item> unfilteredItemList = new ArrayList<>();
-
-        HttpResponse<String> response = httpFetcher.fetch(checkerConfig.url());
         Document doc = Jsoup.parse(response.body());
         doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
 

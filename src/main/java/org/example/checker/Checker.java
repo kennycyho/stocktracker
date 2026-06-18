@@ -1,6 +1,6 @@
 package org.example.checker;
 
-public interface StockChecker {
+public interface Checker {
 
     void check();
 }
