@@ -2,7 +2,7 @@ package org.example.checker.impl;
 
 import org.example.checker.AbstractChecker;
 import org.example.dto.CheckerConfig;
-import org.example.dto.Item;
+import org.example.dto.Product;
 import org.example.fetcher.HttpFetcher;
 import org.example.notifier.Notifier;
 import org.jsoup.Jsoup;
@@ -30,8 +30,8 @@ public class CooksEdgeChecker extends AbstractChecker {
         super(httpFetcher, notifier, checkerConfig);
     }
 
-    public List<Item> getUnfilteredItemList(HttpResponse<String> response) {
-        List<Item> unfilteredItemList = new ArrayList<>();
+    public List<Product> getUnfilteredItemList(HttpResponse<String> response) {
+        List<Product> unfilteredProductList = new ArrayList<>();
         Document doc = Jsoup.parse(response.body());
         doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
 
@@ -39,7 +39,7 @@ public class CooksEdgeChecker extends AbstractChecker {
 
         if (searchWindow == null) {
             LOGGER.error("Search window element could not be found");
-            return unfilteredItemList;
+            return unfilteredProductList;
         }
 
         Elements products = searchWindow.select("div.product-item__meta");
@@ -51,12 +51,12 @@ public class CooksEdgeChecker extends AbstractChecker {
                 if (text.isBlank()) {
                     LOGGER.error("Could not get title for product: {}", product.outerHtml());
                 }
-                else unfilteredItemList.add(new Item(text, href));
+                else unfilteredProductList.add(new Product(text, href));
             }
             else LOGGER.error("Missing anchor in product: {}", product.outerHtml());
         }
 
-        return unfilteredItemList;
+        return unfilteredProductList;
     }
 
 }

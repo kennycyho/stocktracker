@@ -1,7 +1,7 @@
 package org.example.checker;
 
 import org.example.dto.CheckerConfig;
-import org.example.dto.Item;
+import org.example.dto.Product;
 import org.example.fetcher.HttpFetcher;
 import org.example.notifier.Notifier;
 import org.slf4j.Logger;
@@ -29,25 +29,25 @@ public abstract class AbstractChecker implements Checker {
         this.checkerConfig = checkerConfig;
     }
 
-    public abstract List<Item> getUnfilteredItemList(HttpResponse<String> response);
+    public abstract List<Product> getUnfilteredItemList(HttpResponse<String> response);
 
     @Override
     public void check() {
-        List<Item> itemList = getFilteredItemList();
-        if (!itemList.isEmpty()) {
+        List<Product> productList = getFilteredItemList();
+        if (!productList.isEmpty()) {
             LOGGER.info("Found items for product {}", checkerConfig.name());
             notifier.send(
-                    checkerConfig.name() + " is in stock with " + itemList.size() + " items",
-                    itemList);
+                    checkerConfig.name() + " is in stock with " + productList.size() + " items",
+                    productList);
         }
     }
 
-    private List<Item> getFilteredItemList() {
-        List<Item> filteredItemList = new ArrayList<>();
+    private List<Product> getFilteredItemList() {
+        List<Product> filteredProductList = new ArrayList<>();
         HttpResponse<String> response = httpFetcher.fetch(checkerConfig.url());
 
         if (response.statusCode() == 200) {
-            filteredItemList.addAll(getAndFilterItemsList(response));
+            filteredProductList.addAll(getAndFilterItemsList(response));
         }
         else if (response.statusCode() >= 500) {
             LOGGER.info("Server error while fetching {}: {}", checkerConfig.name(), response.statusCode());
@@ -55,16 +55,16 @@ public abstract class AbstractChecker implements Checker {
         else {
             LOGGER.error("Error while fetching {}: {}", checkerConfig.name(), response.statusCode());
         }
-        return filteredItemList;
+        return filteredProductList;
     }
 
-    private List<Item> getAndFilterItemsList(HttpResponse<String> response) {
-        List<Item> unfilteredItemList = getUnfilteredItemList(response);
+    private List<Product> getAndFilterItemsList(HttpResponse<String> response) {
+        List<Product> unfilteredProductList = getUnfilteredItemList(response);
         if (checkerConfig.regexFilter() != null && !checkerConfig.regexFilter().isBlank()) {
-            return unfilteredItemList.stream()
+            return unfilteredProductList.stream()
                     .filter(item -> item.name().matches(checkerConfig.regexFilter()))
                     .toList();
         }
-        return unfilteredItemList;
+        return unfilteredProductList;
     }
 }

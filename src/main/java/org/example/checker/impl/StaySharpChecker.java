@@ -2,7 +2,7 @@ package org.example.checker.impl;
 
 import org.example.checker.AbstractChecker;
 import org.example.dto.CheckerConfig;
-import org.example.dto.Item;
+import org.example.dto.Product;
 import org.example.fetcher.HttpFetcher;
 import org.example.notifier.Notifier;
 import org.jsoup.Jsoup;
@@ -30,8 +30,8 @@ public class StaySharpChecker extends AbstractChecker {
         super(httpFetcher, notifier, checkerConfig);
     }
 
-    public List<Item> getUnfilteredItemList(HttpResponse<String> response) {
-        List<Item> unfilteredItemList = new ArrayList<>();
+    public List<Product> getUnfilteredItemList(HttpResponse<String> response) {
+        List<Product> unfilteredProductList = new ArrayList<>();
         Document doc = Jsoup.parse(response.body());
         doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
 
@@ -42,14 +42,14 @@ public class StaySharpChecker extends AbstractChecker {
                 if (titleText != null) {
                     String href = titleText.absUrl("href");
                     String title = titleText.attr("title");
-                    unfilteredItemList.add(new Item(title, href));
+                    unfilteredProductList.add(new Product(title, href));
                 }
                 else {
                     LOGGER.error("Could not get details for product: {}", product.outerHtml());
                 }
             }
         }
-        return unfilteredItemList;
+        return unfilteredProductList;
     }
 
 }

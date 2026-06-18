@@ -1,6 +1,6 @@
 package org.example.notifier.impl;
 
-import org.example.dto.Item;
+import org.example.dto.Product;
 import org.example.notifier.Notifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -21,20 +21,20 @@ public class EmailNotifier implements Notifier {
         this.mailSender = mailSender;
     }
 
-    public void send(String subject, List<Item> items) {
+    public void send(String subject, List<Product> products) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recipientEmail);
         message.setSubject(subject);
-        message.setText(buildBody(items));
+        message.setText(buildBody(products));
 
         mailSender.send(message);
     }
 
-    private String buildBody(List<Item> items) {
+    private String buildBody(List<Product> products) {
         StringBuilder sb = new StringBuilder();
-        for (Item item : items) {
-            sb.append(item.name())
-                    .append(": ").append(item.url())
+        for (Product product : products) {
+            sb.append(product.name())
+                    .append(": ").append(product.url())
                     .append("\n");
         }
         return sb.toString();
