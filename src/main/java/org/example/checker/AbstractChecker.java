@@ -6,6 +6,7 @@ import org.example.fetcher.HttpFetcher;
 import org.example.notifier.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -23,6 +24,9 @@ public abstract class AbstractChecker implements Checker {
     protected final Notifier notifier;
     protected final CheckerConfig checkerConfig;
 
+    @Value("${app.notifier.recipient}")
+    private String recipientEmail;
+
     protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         this.httpFetcher = httpFetcher;
         this.notifier = notifier;
@@ -36,7 +40,7 @@ public abstract class AbstractChecker implements Checker {
         List<Product> productList = getFilteredItemList();
         if (!productList.isEmpty()) {
             LOGGER.info("Found items for product {}", checkerConfig.name());
-            notifier.send(
+            notifier.send(recipientEmail,
                     checkerConfig.name() + " is in stock with " + productList.size() + " items",
                     productList);
         }
