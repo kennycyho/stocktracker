@@ -1,10 +1,10 @@
-package org.example.checker.impl;
+package app.checker.impl;
 
-import org.example.checker.AbstractChecker;
-import org.example.dto.CheckerConfig;
-import org.example.dto.Product;
-import org.example.fetcher.HttpFetcher;
-import org.example.notifier.Notifier;
+import app.checker.AbstractChecker;
+import app.dto.CheckerConfig;
+import app.dto.Product;
+import app.fetcher.HttpFetcher;
+import app.notifier.Notifier;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

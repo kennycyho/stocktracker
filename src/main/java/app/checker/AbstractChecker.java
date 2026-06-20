@@ -1,9 +1,9 @@
-package org.example.checker;
+package app.checker;
 
-import org.example.dto.CheckerConfig;
-import org.example.dto.Product;
-import org.example.fetcher.HttpFetcher;
-import org.example.notifier.Notifier;
+import app.dto.CheckerConfig;
+import app.dto.Product;
+import app.fetcher.HttpFetcher;
+import app.notifier.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

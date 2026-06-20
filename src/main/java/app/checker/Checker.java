@@ -1,4 +1,4 @@
-package org.example.checker;
+package app.checker;
 
 public interface Checker {
 

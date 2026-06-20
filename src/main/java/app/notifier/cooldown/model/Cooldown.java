@@ -1,4 +1,4 @@
-package org.example.notifier.cooldown.model;
+package app.notifier.cooldown.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;

@@ -1,8 +1,8 @@
-package org.example.notifier.impl;
+package app.notifier.impl;
 
-import org.example.dto.Product;
-import org.example.notifier.Notifier;
-import org.example.notifier.cooldown.CooldownService;
+import app.dto.Product;
+import app.notifier.Notifier;
+import app.notifier.cooldown.CooldownService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;

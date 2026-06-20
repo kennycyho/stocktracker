@@ -1,8 +1,8 @@
-package org.example;
+package app;
 
-import org.example.dto.Product;
-import org.example.notifier.cooldown.CooldownService;
-import org.example.notifier.cooldown.repository.CooldownRepository;
+import app.dto.Product;
+import app.notifier.cooldown.CooldownService;
+import app.notifier.cooldown.repository.CooldownRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,15 +69,5 @@ public class CooldownServiceUnitTests {
     void isDisabled_returnsTrue_whenRecordExistsAndIsDisabled() {
         when(cooldownRepository.findDisabledByUrl(PRODUCT.url())).thenReturn(Optional.of(true));
         assertTrue(cooldownService.isDisabled(PRODUCT));
-    }
-
-    @Test
-    void setOrRefreshCooldown_createsNewRecord_whenNoneExists() {
-
-    }
-
-    @Test
-    void setOrRefreshCooldown_updatesTimestamp_whenRecordExists() {
-
     }
 }

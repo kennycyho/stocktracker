@@ -1,6 +1,6 @@
-package org.example.notifier;
+package app.notifier;
 
-import org.example.dto.Product;
+import app.dto.Product;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
-package org.example.notifier.cooldown.repository;
+package app.notifier.cooldown.repository;
 
-import org.example.notifier.cooldown.model.Cooldown;
+import app.notifier.cooldown.model.Cooldown;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

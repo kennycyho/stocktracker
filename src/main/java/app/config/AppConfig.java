@@ -1,14 +1,14 @@
-package org.example.config;
+package app.config;
 
+import app.checker.Checker;
+import app.checker.impl.CooksEdgeChecker;
+import app.checker.impl.SharpKnifeShopChecker;
+import app.checker.impl.StaySharpChecker;
+import app.dto.CheckerConfig;
+import app.fetcher.HttpFetcher;
+import app.notifier.Notifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.checker.Checker;
-import org.example.checker.impl.CooksEdgeChecker;
-import org.example.checker.impl.SharpKnifeShopChecker;
-import org.example.checker.impl.StaySharpChecker;
-import org.example.dto.CheckerConfig;
-import org.example.fetcher.HttpFetcher;
-import org.example.notifier.Notifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;

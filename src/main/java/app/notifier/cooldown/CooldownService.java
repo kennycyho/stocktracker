@@ -1,8 +1,8 @@
-package org.example.notifier.cooldown;
+package app.notifier.cooldown;
 
-import org.example.dto.Product;
-import org.example.notifier.cooldown.model.Cooldown;
-import org.example.notifier.cooldown.repository.CooldownRepository;
+import app.dto.Product;
+import app.notifier.cooldown.model.Cooldown;
+import app.notifier.cooldown.repository.CooldownRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

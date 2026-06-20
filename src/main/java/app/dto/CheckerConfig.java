@@ -1,4 +1,4 @@
-package org.example.dto;
+package app.dto;
 
 public record CheckerConfig(String name, String checker, String url, String regexFilter) {
 
