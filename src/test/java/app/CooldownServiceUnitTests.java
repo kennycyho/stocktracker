@@ -1,8 +1,8 @@
 package app;
 
+import app.cooldown.CooldownService;
+import app.cooldown.repository.CooldownRepository;
 import app.dto.Product;
-import app.notifier.cooldown.CooldownService;
-import app.notifier.cooldown.repository.CooldownRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
