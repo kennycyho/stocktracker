@@ -7,7 +7,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,13 +34,10 @@ public class EmailNotifier implements Notifier {
     }
 
     private List<Product> getProductsToNotify(List<Product> products) {
-        List<Product> productsToNotify = new ArrayList<>();
-        for (Product product : products) {
-            if (cooldownService.isOffCooldown(product) && !cooldownService.isDisabled(product)) {
-                productsToNotify.add(product);
-            }
-        }
-        return productsToNotify;
+        return products.stream()
+                .filter(product ->
+                        cooldownService.isOffCooldown(product) && !cooldownService.isDisabled(product))
+                .toList();
     }
 
     private String buildBody(List<Product> products) {

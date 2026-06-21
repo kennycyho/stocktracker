@@ -8,9 +8,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @SpringBootTest
 public class CooldownServiceIntegrationTests {
@@ -20,6 +23,9 @@ public class CooldownServiceIntegrationTests {
 
     @Autowired
     CooldownService cooldownService;
+
+    @Value("${cooldown.interval-ms}")
+    Long interval;
 
     private static final Product PRODUCT = new Product("Test Product", "http://www.example.com");
 
@@ -43,4 +49,51 @@ public class CooldownServiceIntegrationTests {
         Assertions.assertTrue(cooldownService.isOffCooldown(PRODUCT));
     }
 
+    @Test
+    void isOffCooldown_returnsFalse_whenRecordIsNotExpired() {
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        cooldownRepository.save(c);
+
+        Assertions.assertFalse(cooldownService.isOffCooldown(PRODUCT));
+    }
+
+    @Test
+    void isDisabled_returnsFalse_whenNoRecordExists() {
+        Assertions.assertFalse(cooldownService.isDisabled(PRODUCT));
+    }
+
+    @Test
+    void isDisabled_returnsTrue_whenRecordIsDisabled() {
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        c.setDisabled(true);
+        cooldownRepository.save(c);
+
+        Assertions.assertTrue(cooldownService.isDisabled(PRODUCT));
+    }
+
+    @Test
+    void setOrRefreshCooldown_savesFreshRecord_whenNoRecordExists() {
+        cooldownService.setOrRefreshCooldown(PRODUCT);
+
+        Optional<Cooldown> c = cooldownRepository.findByUrl(PRODUCT.url());
+        Assertions.assertTrue(c.isPresent());
+        Assertions.assertTrue(c.get().getLastSeen().isAfter(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS)));
+    }
+
+    @Test
+    void setOrRefreshCooldown_refreshesRecord_whenRecordExists() {
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        c.setLastSeen(LocalDateTime.now().minusDays(10));
+        cooldownRepository.save(c);
+
+        cooldownService.setOrRefreshCooldown(PRODUCT);
+
+        Optional<Cooldown> existingCooldown = cooldownRepository.findByUrl(PRODUCT.url());
+        Assertions.assertTrue(existingCooldown.isPresent());
+        Assertions.assertTrue(existingCooldown.get()
+                .getLastSeen().isAfter(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS)));
+    }
 }

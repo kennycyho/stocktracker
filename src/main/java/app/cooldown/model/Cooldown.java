@@ -16,7 +16,7 @@ public class Cooldown {
     private String url;
 
     @Column(name = "last_seen", nullable = false)
-    private LocalDateTime lastSeen;
+    private LocalDateTime lastSeen = LocalDateTime.now();
 
     @Column(nullable = false)
     private boolean disabled = false;
