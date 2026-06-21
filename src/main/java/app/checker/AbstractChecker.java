@@ -18,7 +18,7 @@ import java.util.List;
 
 public abstract class AbstractChecker implements Checker {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractChecker.class);
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected final HttpFetcher httpFetcher;
     protected final Notifier notifier;
@@ -39,7 +39,7 @@ public abstract class AbstractChecker implements Checker {
     public void check() {
         List<Product> productList = getFilteredItemList();
         if (!productList.isEmpty()) {
-            LOGGER.info("Found items for product {}", checkerConfig.name());
+            logger.info("Found items for product {}", checkerConfig.name());
             notifier.send(recipientEmail,
                     checkerConfig.name() + " is in stock with " + productList.size() + " items",
                     productList);
@@ -54,10 +54,10 @@ public abstract class AbstractChecker implements Checker {
             filteredProductList.addAll(getAndFilterItemsList(response));
         }
         else if (response.statusCode() >= 500) {
-            LOGGER.info("Server error while fetching {}: {}", checkerConfig.name(), response.statusCode());
+            logger.info("Server error while fetching {}: {}", checkerConfig.name(), response.statusCode());
         }
         else {
-            LOGGER.error("Error while fetching {}: {}", checkerConfig.name(), response.statusCode());
+            logger.error("Error while fetching {}: {}", checkerConfig.name(), response.statusCode());
         }
         return filteredProductList;
     }

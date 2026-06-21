@@ -9,8 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpResponse;
@@ -23,8 +21,6 @@ import java.util.List;
  */
 
 public class StaySharpChecker extends AbstractChecker {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(StaySharpChecker.class.getName());
 
     public StaySharpChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         super(httpFetcher, notifier, checkerConfig);
@@ -45,7 +41,7 @@ public class StaySharpChecker extends AbstractChecker {
                     unfilteredProductList.add(new Product(title, href));
                 }
                 else {
-                    LOGGER.error("Could not get details for product: {}", product.outerHtml());
+                    logger.error("Could not get details for product: {}", product.outerHtml());
                 }
             }
         }

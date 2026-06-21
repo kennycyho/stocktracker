@@ -9,8 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpResponse;
@@ -23,8 +21,6 @@ import java.util.List;
  */
 
 public class SharpKnifeShopChecker extends AbstractChecker {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SharpKnifeShopChecker.class.getName());
 
     public SharpKnifeShopChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         super(httpFetcher, notifier, checkerConfig);
@@ -39,7 +35,7 @@ public class SharpKnifeShopChecker extends AbstractChecker {
 
         Element collection = doc.selectFirst("div[class=#collection-grid]");
         if (collection == null) {
-            LOGGER.error("Could not get collection element");
+            logger.error("Could not get collection element");
             return unfilteredProductList;
         }
 
@@ -48,7 +44,7 @@ public class SharpKnifeShopChecker extends AbstractChecker {
             String href = product.absUrl("href");
             String text = product.text();
             if (text.isBlank()) {
-                LOGGER.error("Could not get title for product: {}", product.outerHtml());
+                logger.error("Could not get title for product: {}", product.outerHtml());
             }
             else unfilteredProductList.add(new Product(text, href));
         }
@@ -62,7 +58,7 @@ public class SharpKnifeShopChecker extends AbstractChecker {
             String text = title.text();
             return !text.contains("0 result");
         }
-        else LOGGER.error("Could not get page title");
+        else logger.error("Could not get page title");
         return true;
     }
 }
