@@ -1,7 +1,6 @@
 package app.cooldown.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -16,16 +15,11 @@ public class Cooldown {
     @Column(nullable = false, length = 2048, unique = true)
     private String url;
 
-    @CreationTimestamp
-    @Column(name = "cooldown_since", nullable = false)
-    private LocalDateTime cooldownSince;
+    @Column(name = "last_seen", nullable = false)
+    private LocalDateTime lastSeen;
 
     @Column(nullable = false)
     private boolean disabled = false;
-
-    public Cooldown(String url) {
-        this.url = url;
-    }
 
     public Long getId() {
         return id;
@@ -43,12 +37,12 @@ public class Cooldown {
         this.url = url;
     }
 
-    public LocalDateTime getCooldownSince() {
-        return cooldownSince;
+    public LocalDateTime getLastSeen() {
+        return lastSeen;
     }
 
-    public void setCooldownSince(LocalDateTime cooldownSince) {
-        this.cooldownSince = cooldownSince;
+    public void setLastSeen(LocalDateTime lastSeen) {
+        this.lastSeen = lastSeen;
     }
 
     public boolean isDisabled() {

@@ -5,7 +5,6 @@ import app.cooldown.repository.CooldownRepository;
 import app.dto.Product;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -24,9 +23,9 @@ public class CooldownService {
     }
 
     public boolean isOffCooldown(Product product) {
-        Optional<LocalDateTime> last_cooldown = cooldownRepository.findCooldownSinceByUrl(product.url());
-        return last_cooldown.isEmpty() // not yet tracked
-                || last_cooldown.get().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
+        Optional<LocalDateTime> lastSeen = cooldownRepository.findLastSeenByUrl(product.url());
+        return lastSeen.isEmpty()
+                || lastSeen.get().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
     }
 
     public boolean isDisabled(Product product) {
@@ -34,17 +33,26 @@ public class CooldownService {
         return disabledOptional.isPresent() && disabledOptional.get();
     }
 
-    @Transactional
     public void setOrRefreshCooldown(Product product) {
-        Cooldown newCooldown = cooldownRepository.findByUrl(product.url()).orElse(new Cooldown(product.url()));
-        newCooldown.setCooldownSince(LocalDateTime.now());
-        cooldownRepository.save(newCooldown);
+        Cooldown cooldown = cooldownRepository.findByUrl(product.url())
+                .orElseGet(() -> {
+                    Cooldown c = new Cooldown();
+                    c.setUrl(product.url());
+                    return c;
+                });
+        cooldown.setLastSeen(LocalDateTime.now());
+        cooldownRepository.save(cooldown);
     }
 
     public void disable(Product product) {
-        Cooldown newCooldown = cooldownRepository.findByUrl(product.url()).orElse(new Cooldown(product.url()));
-        newCooldown.setDisabled(true);
-        cooldownRepository.save(newCooldown);
+        Cooldown cooldown = cooldownRepository.findByUrl(product.url())
+                .orElseGet(() -> {
+                    Cooldown c = new Cooldown();
+                    c.setUrl(product.url());
+                    return c;
+                });
+        cooldown.setDisabled(true);
+        cooldownRepository.save(cooldown);
     }
 
 }

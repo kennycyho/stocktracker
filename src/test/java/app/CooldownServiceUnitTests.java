@@ -35,20 +35,20 @@ public class CooldownServiceUnitTests {
 
     @Test
     void isOffCooldown_returnsTrue_whenNoRecordExists() {
-        when(cooldownRepository.findCooldownSinceByUrl(PRODUCT.url())).thenReturn(Optional.empty());
+        when(cooldownRepository.findLastSeenByUrl(PRODUCT.url())).thenReturn(Optional.empty());
         assertTrue(cooldownService.isOffCooldown(PRODUCT));
     }
 
     @Test
     void isOffCooldown_returnsTrue_whenCooldownHasExpired() {
-        when(cooldownRepository.findCooldownSinceByUrl(PRODUCT.url()))
+        when(cooldownRepository.findLastSeenByUrl(PRODUCT.url()))
                 .thenReturn(Optional.of(LocalDateTime.now().minus(Duration.ofMillis(INTERVAL_MS * 2))));
         assertTrue(cooldownService.isOffCooldown(PRODUCT));
     }
 
     @Test
     void isOffCooldown_returnsFalse_whenCooldownIsActive() {
-        when(cooldownRepository.findCooldownSinceByUrl(PRODUCT.url()))
+        when(cooldownRepository.findLastSeenByUrl(PRODUCT.url()))
                 .thenReturn(Optional.of(LocalDateTime.now()));
         assertFalse(cooldownService.isOffCooldown(PRODUCT));
     }
