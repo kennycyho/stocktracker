@@ -24,10 +24,8 @@ public class CooldownService {
 
     public boolean isValid(Product product) {
         Optional<Cooldown> cooldownOptional = cooldownRepository.findByUrl(product.url());
-        return cooldownOptional.isEmpty()
-                || cooldownOptional.get().getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS))
-                && !cooldownOptional.get().isDisabled();
-
+        return cooldownOptional.isEmpty() // never seen before
+                || isOffCooldown(cooldownOptional.get()) && !cooldownOptional.get().isDisabled();
     }
 
     public void setOrRefreshCooldown(Product product) {
@@ -40,6 +38,10 @@ public class CooldownService {
         Cooldown cooldown = findOrCreate(product.url());
         cooldown.setDisabled(true);
         cooldownRepository.save(cooldown);
+    }
+
+    private boolean isOffCooldown(Cooldown cooldown) {
+        return cooldown.getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
     }
 
     private Cooldown findOrCreate(String url) {

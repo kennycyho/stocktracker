@@ -62,6 +62,7 @@ public class CooldownServiceIntegrationTests {
     void isValid_returnsFalse_whenRecordIsDisabled() {
         Cooldown c = new Cooldown();
         c.setUrl(PRODUCT.url());
+        c.setLastSeen(LocalDateTime.now().minusDays(10));
         c.setDisabled(true);
         cooldownRepository.save(c);
 
