@@ -53,7 +53,6 @@ public class CooldownServiceIntegrationTests {
     void isValid_returnsFalse_whenRecordIsOnCooldown() {
         Cooldown c = new Cooldown();
         c.setUrl(PRODUCT.url());
-        c.setLastSeen(LocalDateTime.now());
         cooldownRepository.save(c);
 
         Assertions.assertFalse(cooldownService.isValid(PRODUCT));
@@ -64,7 +63,6 @@ public class CooldownServiceIntegrationTests {
         Cooldown c = new Cooldown();
         c.setUrl(PRODUCT.url());
         c.setDisabled(true);
-        c.setLastSeen(LocalDateTime.now());
         cooldownRepository.save(c);
 
         Assertions.assertFalse(cooldownService.isValid(PRODUCT));
@@ -105,6 +103,14 @@ public class CooldownServiceIntegrationTests {
 
     @Test
     void disable_setsRecordToDisabled_whenRecordExists() {
-        
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        cooldownRepository.save(c);
+
+        cooldownService.disable(PRODUCT);
+
+        Optional<Cooldown> cd = cooldownRepository.findByUrl(PRODUCT.url());
+        Assertions.assertTrue(cd.isPresent());
+        Assertions.assertTrue(cd.get().isDisabled());
     }
 }
