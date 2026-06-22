@@ -22,7 +22,7 @@ public class Scheduler {
     @Scheduled(fixedDelayString = "${checker.interval-ms}")
     public void runChecks() {
         for (Checker checker : checkers) {
-            LOGGER.info("Running checker: {}", checker.getClass().getSimpleName());
+            LOGGER.info("Running checker: {}", checker.getName());
             checker.check();
         }
     }

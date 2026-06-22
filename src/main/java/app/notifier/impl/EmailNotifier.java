@@ -41,7 +41,7 @@ public class EmailNotifier implements Notifier {
 
     private List<Product> getProductsToNotify(List<Product> products) {
         return products.stream()
-                .filter(cooldownService::isOffCooldownAndEnabled)
+                .filter(cooldownService::isValid)
                 .toList();
     }
 

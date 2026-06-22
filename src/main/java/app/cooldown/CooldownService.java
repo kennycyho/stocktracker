@@ -22,7 +22,7 @@ public class CooldownService {
         this.interval = interval;
     }
 
-    public boolean isOffCooldownAndEnabled(Product product) {
+    public boolean isValid(Product product) {
         Optional<Cooldown> cooldownOptional = cooldownRepository.findByUrl(product.url());
         return cooldownOptional.isEmpty()
                 || cooldownOptional.get().getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS))

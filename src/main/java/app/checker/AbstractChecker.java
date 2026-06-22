@@ -69,4 +69,8 @@ public abstract class AbstractChecker implements Checker {
         }
         return unfilteredProductList;
     }
+
+    public String getName() {
+        return checkerConfig.name();
+    }
 }
