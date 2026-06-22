@@ -15,14 +15,14 @@ public class EmailNotifier implements Notifier {
 
     private final JavaMailSender mailSender;
     private final CooldownService cooldownService;
-
-    @Value("${app.notifier.recipient}")
-    private String recipientEmail;
+    private final String recipientEmail;
 
     public EmailNotifier(JavaMailSender mailSender,
-                         CooldownService cooldownService) {
+                         CooldownService cooldownService,
+                         @Value("${app.notifier.recipient}") String recipientEmail) {
         this.mailSender = mailSender;
         this.cooldownService = cooldownService;
+        this.recipientEmail = recipientEmail;
     }
 
     public void send(String subject, List<Product> products) {
