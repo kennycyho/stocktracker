@@ -25,7 +25,7 @@ public class CooldownService {
     public boolean isValid(Product product) {
         Optional<Cooldown> cooldownOptional = cooldownRepository.findByUrl(product.url());
         return cooldownOptional.isEmpty() // never seen before
-                || isOffCooldown(cooldownOptional.get()) && !cooldownOptional.get().isDisabled();
+                || !cooldownOptional.get().isDisabled() && isOffCooldown(cooldownOptional.get());
     }
 
     public void setOrRefreshCooldown(Product product) {
