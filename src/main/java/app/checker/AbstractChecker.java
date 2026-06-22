@@ -6,7 +6,6 @@ import app.fetcher.HttpFetcher;
 import app.notifier.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -24,9 +23,6 @@ public abstract class AbstractChecker implements Checker {
     protected final Notifier notifier;
     protected final CheckerConfig checkerConfig;
 
-    @Value("${app.notifier.recipient}")
-    private String recipientEmail;
-
     protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         this.httpFetcher = httpFetcher;
         this.notifier = notifier;
@@ -40,8 +36,7 @@ public abstract class AbstractChecker implements Checker {
         List<Product> productList = getFilteredItemList();
         if (!productList.isEmpty()) {
             logger.info("Found items for product {}", checkerConfig.name());
-            notifier.send(recipientEmail,
-                    checkerConfig.name() + " is in stock with " + productList.size() + " items",
+            notifier.send(checkerConfig.name() + " is in stock with " + productList.size() + " items",
                     productList);
         }
     }
@@ -50,7 +45,10 @@ public abstract class AbstractChecker implements Checker {
         List<Product> filteredProductList = new ArrayList<>();
         HttpResponse<String> response = httpFetcher.fetch(checkerConfig.url());
 
-        if (response.statusCode() == 200) {
+        if (response == null) {
+            logger.warn("Fetch returned null for {}, skipping", checkerConfig.name());
+        }
+        else if (response.statusCode() == 200) {
             filteredProductList.addAll(getAndFilterItemsList(response));
         }
         else if (response.statusCode() >= 500) {

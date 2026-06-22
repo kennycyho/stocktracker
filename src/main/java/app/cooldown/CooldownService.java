@@ -22,37 +22,32 @@ public class CooldownService {
         this.interval = interval;
     }
 
-    public boolean isOffCooldown(Product product) {
-        Optional<LocalDateTime> lastSeen = cooldownRepository.findLastSeenByUrl(product.url());
-        return lastSeen.isEmpty()
-                || lastSeen.get().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
-    }
+    public boolean isOffCooldownAndEnabled(Product product) {
+        Optional<Cooldown> cooldownOptional = cooldownRepository.findByUrl(product.url());
+        return cooldownOptional.isEmpty()
+                || cooldownOptional.get().getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS))
+                && !cooldownOptional.get().isDisabled();
 
-    public boolean isDisabled(Product product) {
-        Optional<Boolean> disabledOptional = cooldownRepository.findDisabledByUrl(product.url());
-        return disabledOptional.isPresent() && disabledOptional.get();
     }
 
     public void setOrRefreshCooldown(Product product) {
-        Cooldown cooldown = cooldownRepository.findByUrl(product.url())
-                .orElseGet(() -> {
-                    Cooldown c = new Cooldown();
-                    c.setUrl(product.url());
-                    return c;
-                });
+        Cooldown cooldown = findOrCreate(product.url());
         cooldown.setLastSeen(LocalDateTime.now());
         cooldownRepository.save(cooldown);
     }
 
     public void disable(Product product) {
-        Cooldown cooldown = cooldownRepository.findByUrl(product.url())
-                .orElseGet(() -> {
-                    Cooldown c = new Cooldown();
-                    c.setUrl(product.url());
-                    return c;
-                });
+        Cooldown cooldown = findOrCreate(product.url());
         cooldown.setDisabled(true);
         cooldownRepository.save(cooldown);
+    }
+
+    private Cooldown findOrCreate(String url) {
+        return cooldownRepository.findByUrl(url).orElseGet(() -> {
+            Cooldown c = new Cooldown();
+            c.setUrl(url);
+            return c;
+        });
     }
 
 }

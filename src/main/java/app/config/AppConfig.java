@@ -27,19 +27,19 @@ public class AppConfig {
     @Bean
     public List<Checker> checkers(ObjectMapper mapper, HttpFetcher fetcher, Notifier notifier)
             throws IOException {
-        List<CheckerConfig> configs = mapper.readValue(
+        List<CheckerConfig> configList = mapper.readValue(
                 new ClassPathResource("checkers.json").getInputStream(),
                 new TypeReference<>() {
                 }
         );
 
-        Map<String, Function<CheckerConfig, Checker>> factories = Map.of(
+        Map<String, Function<CheckerConfig, Checker>> checkFactory = Map.of(
                 "cooksEdgeChecker", c -> new CooksEdgeChecker(fetcher, notifier, c),
                 "sharpKnifeShopChecker", c -> new SharpKnifeShopChecker(fetcher, notifier, c),
                 "staySharpChecker", c -> new StaySharpChecker(fetcher, notifier, c)
         );
-        return configs.stream()
-                .map(c -> Optional.ofNullable(factories.get(c.checker()))
+        return configList.stream()
+                .map(c -> Optional.ofNullable(checkFactory.get(c.checker()))
                         .orElseThrow(() -> new IllegalArgumentException("Unknown checker: " + c.checker()))
                         .apply(c))
                 .toList();

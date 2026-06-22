@@ -35,42 +35,37 @@ public class CooldownServiceIntegrationTests {
     }
 
     @Test
-    void isOffCooldown_returnsTrue_whenNoRecordExists() {
-        Assertions.assertTrue(cooldownService.isOffCooldown(PRODUCT));
+    void isOffCooldownAndEnabled_returnsTrue_whenNoRecordExists() {
+        Assertions.assertTrue(cooldownService.isOffCooldownAndEnabled(PRODUCT));
     }
 
     @Test
-    void isOffCooldown_returnsTrue_whenRecordIsExpired() {
+    void isOffCooldownAndEnabled_returnsTrue_whenRecordIsExpired() {
         Cooldown c = new Cooldown();
         c.setUrl(PRODUCT.url());
         c.setLastSeen(LocalDateTime.now().minusDays(10));
         cooldownRepository.save(c);
 
-        Assertions.assertTrue(cooldownService.isOffCooldown(PRODUCT));
+        Assertions.assertTrue(cooldownService.isOffCooldownAndEnabled(PRODUCT));
     }
 
     @Test
-    void isOffCooldown_returnsFalse_whenRecordIsNotExpired() {
+    void isOffCooldownAndEnabled_returnsFalse_whenRecordIsNotExpired() {
         Cooldown c = new Cooldown();
         c.setUrl(PRODUCT.url());
         cooldownRepository.save(c);
 
-        Assertions.assertFalse(cooldownService.isOffCooldown(PRODUCT));
+        Assertions.assertFalse(cooldownService.isOffCooldownAndEnabled(PRODUCT));
     }
 
     @Test
-    void isDisabled_returnsFalse_whenNoRecordExists() {
-        Assertions.assertFalse(cooldownService.isDisabled(PRODUCT));
-    }
-
-    @Test
-    void isDisabled_returnsTrue_whenRecordIsDisabled() {
+    void isOffCooldownAndEnabled_returnsFalse_whenRecordIsDisabled() {
         Cooldown c = new Cooldown();
         c.setUrl(PRODUCT.url());
         c.setDisabled(true);
         cooldownRepository.save(c);
 
-        Assertions.assertTrue(cooldownService.isDisabled(PRODUCT));
+        Assertions.assertFalse(cooldownService.isOffCooldownAndEnabled(PRODUCT));
     }
 
     @Test

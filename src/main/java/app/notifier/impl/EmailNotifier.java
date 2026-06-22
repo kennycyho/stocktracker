@@ -3,6 +3,7 @@ package app.notifier.impl;
 import app.cooldown.CooldownService;
 import app.dto.Product;
 import app.notifier.Notifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,19 @@ public class EmailNotifier implements Notifier {
     private final JavaMailSender mailSender;
     private final CooldownService cooldownService;
 
+    @Value("${app.notifier.recipient}")
+    private String recipientEmail;
+
     public EmailNotifier(JavaMailSender mailSender,
                          CooldownService cooldownService) {
         this.mailSender = mailSender;
         this.cooldownService = cooldownService;
     }
 
-    public void send(String recipientEmail, String subject, List<Product> products) {
+    public void send(String subject, List<Product> products) {
         List<Product> productsToNotify = getProductsToNotify(products);
+
+        if (productsToNotify.isEmpty()) return;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recipientEmail);
@@ -35,8 +41,7 @@ public class EmailNotifier implements Notifier {
 
     private List<Product> getProductsToNotify(List<Product> products) {
         return products.stream()
-                .filter(product ->
-                        cooldownService.isOffCooldown(product) && !cooldownService.isDisabled(product))
+                .filter(cooldownService::isOffCooldownAndEnabled)
                 .toList();
     }
 
