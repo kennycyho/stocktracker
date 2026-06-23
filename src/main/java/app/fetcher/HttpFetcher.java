@@ -37,8 +37,12 @@ public class HttpFetcher {
                 logger.error("Page returned status: {}. Url: {}", response.statusCode(), url);
             }
         }
-        catch (IOException | InterruptedException e) {
+        catch (IOException e) {
             logger.error("Url could not be fetched: {}", url, e);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Fetch interrupted for url: {}", url, e);
         }
         return response;
     }

@@ -23,7 +23,12 @@ public class Scheduler {
     public void runChecks() {
         for (Checker checker : checkers) {
             LOGGER.info("Running checker: {}", checker.getName());
-            checker.check();
+            try {
+                checker.check();
+            }
+            catch (Exception e) {
+                LOGGER.error("Checker {} threw an unexpected exception", checker.getName(), e);
+            }
         }
     }
 }
