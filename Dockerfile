@@ -1,5 +1,8 @@
 # ---- Build stage ----
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
+
+LABEL org.opencontainers.image.source=https://github.com/kennycyho/stocktracker
+
 WORKDIR /app
 COPY pom.xml .
 # Download dependencies first (layer cache — improves rebuild speed)
