@@ -8,7 +8,8 @@
   {
     "name": "Sharp Knife Shop Shiro Kamo Santoku",
     "checker": "sharpKnifeShopChecker",
-    "url": "https://sharpknifeshop.com/search?type=product&q=shiro+kamo&filter.p.m.custom.knife_type_=Santoku"
+    "url": "https://sharpknifeshop.com/search?type=product&q=shiro+kamo&filter.p.m.custom.knife_type_=Santoku",
+    "regexFilter": "(?i).*shiro\\s+kamo.*"
   },
   {
     "name": "Stay Sharp Shiro Kamo Santoku",
