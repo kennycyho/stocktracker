@@ -24,6 +24,38 @@ notification status via PostgreSQL, and sends instant email alerts when stock be
 
 ---
 
+## Project Architecture & Structure
+
+```text
+src/main/java/app/
+ ├── Application.java               # Main application entry point
+ ├── checker/                       
+ │    ├── Checker.java              # Interface definition for checkers
+ │    ├── AbstractChecker.java      # Base scraper logic, HTTP response filtering, and regex piping
+ │    └── impl/                     # Site-specific scraper strategies (Jsoup parsers)
+ │         ├── CooksEdgeChecker.java
+ │         ├── SharpKnifeShopChecker.java
+ │         └── StaySharpChecker.java
+ ├── config/
+ │    └── AppConfig.java            # Factory wiring mapping configs to proper Checker instances
+ ├── cooldown/                      # Domain logic for managing notification state
+ │    ├── CooldownService.java      
+ │    ├── model/Cooldown.java       # JPA Entity for state tracking
+ │    └── repository/CooldownRepository.java
+ ├── dto/                           # Immutable records for configuration and items
+ │    ├── CheckerConfig.java
+ │    └── Product.java
+ ├── fetcher/
+ │    └── HttpFetcher.java          # Null-safe HttpClient wrapper with request timeouts
+ ├── notifier/                      # Alerts system
+ │    ├── Notifier.java
+ │    └── impl/EmailNotifier.java   # Spring Mail integration with cooldown validation
+ └── scheduler/
+      └── Scheduler.java            # Scheduled orchestration engine
+```
+
+---
+
 ## Component Behavior & Strategy
 
 ### 1. Scraping Layer (`AbstractChecker`)
