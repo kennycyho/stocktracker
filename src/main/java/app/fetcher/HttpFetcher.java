@@ -34,7 +34,7 @@ public class HttpFetcher {
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
-                logger.error("Page returned status: {}. Url: {}", response.statusCode(), url);
+                logger.debug("Page returned status: {}. Url: {}", response.statusCode(), url);
             }
         }
         catch (IOException e) {
