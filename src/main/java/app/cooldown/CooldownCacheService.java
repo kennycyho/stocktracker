@@ -1,4 +1,4 @@
-package app.cooldown.repository;
+package app.cooldown;
 
 import app.cooldown.model.Cooldown;
 import org.slf4j.Logger;
