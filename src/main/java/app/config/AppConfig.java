@@ -4,6 +4,7 @@ import app.checker.Checker;
 import app.checker.impl.CooksEdgeChecker;
 import app.checker.impl.SharpKnifeShopChecker;
 import app.checker.impl.StaySharpChecker;
+import app.cooldown.CooldownService;
 import app.dto.CheckerConfig;
 import app.fetcher.HttpFetcher;
 import app.notifier.Notifier;
@@ -37,7 +38,10 @@ public class AppConfig {
      * @throws IOException if an I/O error occurs while reading the configuration file
      */
     @Bean
-    public List<Checker> checkers(ObjectMapper mapper, HttpFetcher fetcher, Notifier notifier)
+    public List<Checker> checkers(ObjectMapper mapper,
+                                  HttpFetcher fetcher,
+                                  Notifier notifier,
+                                  CooldownService cooldownService)
             throws IOException {
         List<CheckerConfig> configList = mapper.readValue(
                 new ClassPathResource("checkers.json").getInputStream(),
@@ -46,9 +50,12 @@ public class AppConfig {
         );
 
         Map<String, Function<CheckerConfig, Checker>> checkFactory = Map.of(
-                "cooksEdgeChecker", c -> new CooksEdgeChecker(fetcher, notifier, c),
-                "sharpKnifeShopChecker", c -> new SharpKnifeShopChecker(fetcher, notifier, c),
-                "staySharpChecker", c -> new StaySharpChecker(fetcher, notifier, c)
+                "cooksEdgeChecker", c ->
+                        new CooksEdgeChecker(fetcher, notifier, cooldownService, c),
+                "sharpKnifeShopChecker", c ->
+                        new SharpKnifeShopChecker(fetcher, notifier, cooldownService, c),
+                "staySharpChecker", c ->
+                        new StaySharpChecker(fetcher, notifier, cooldownService, c)
         );
         return configList.stream()
                 .map(c -> Optional.ofNullable(checkFactory.get(c.checker()))

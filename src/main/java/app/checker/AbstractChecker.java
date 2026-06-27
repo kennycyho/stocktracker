@@ -31,11 +31,14 @@ public abstract class AbstractChecker implements Checker {
      * @param notifier      The notifier to use for sending notifications.
      * @param checkerConfig Configuration settings for the checker.
      */
-    protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig, CooldownService cooldownService) {
+    protected AbstractChecker(HttpFetcher httpFetcher,
+                              Notifier notifier,
+                              CooldownService cooldownService,
+                              CheckerConfig checkerConfig) {
         this.httpFetcher = httpFetcher;
         this.notifier = notifier;
-        this.checkerConfig = checkerConfig;
         this.cooldownService = cooldownService;
+        this.checkerConfig = checkerConfig;
     }
 
     /**

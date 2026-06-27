@@ -1,6 +1,7 @@
 package app.checker.impl;
 
 import app.checker.AbstractChecker;
+import app.cooldown.CooldownService;
 import app.dto.CheckerConfig;
 import app.dto.Product;
 import app.fetcher.HttpFetcher;
@@ -22,8 +23,11 @@ import java.util.List;
 
 public class SharpKnifeShopChecker extends AbstractChecker {
 
-    public SharpKnifeShopChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
-        super(httpFetcher, notifier, checkerConfig);
+    public SharpKnifeShopChecker(HttpFetcher httpFetcher,
+                                 Notifier notifier,
+                                 CooldownService cooldownService,
+                                 CheckerConfig checkerConfig) {
+        super(httpFetcher, notifier, cooldownService, checkerConfig);
     }
 
     public List<Product> getUnfilteredItemList(HttpResponse<String> response) {
