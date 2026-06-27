@@ -12,9 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Checks stock from search results page.
+ * Abstract base class for checking stock from search results pages.
  */
-
 public abstract class AbstractChecker implements Checker {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -23,14 +22,30 @@ public abstract class AbstractChecker implements Checker {
     protected final Notifier notifier;
     protected final CheckerConfig checkerConfig;
 
+    /**
+     * Constructs an instance of AbstractChecker with the provided dependencies.
+     *
+     * @param httpFetcher The HTTP fetcher to use for fetching web pages.
+     * @param notifier    The notifier to use for sending notifications.
+     * @param checkerConfig Configuration settings for the checker.
+     */
     protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
         this.httpFetcher = httpFetcher;
         this.notifier = notifier;
         this.checkerConfig = checkerConfig;
     }
 
+    /**
+     * Retrieves an unfiltered list of products from the search results page.
+     *
+     * @param response The HTTP response containing the search results page.
+     * @return An unfiltered list of products.
+     */
     public abstract List<Product> getUnfilteredItemList(HttpResponse<String> response);
 
+    /**
+     * Checks for available stock and sends notifications if any items are in stock.
+     */
     @Override
     public void check() {
         List<Product> productList = getFilteredItemList();
@@ -41,6 +56,11 @@ public abstract class AbstractChecker implements Checker {
         }
     }
 
+    /**
+     * Retrieves and filters the list of products based on the checker configuration.
+     *
+     * @return A filtered list of products.
+     */
     private List<Product> getFilteredItemList() {
         List<Product> filteredProductList = new ArrayList<>();
         HttpResponse<String> response = httpFetcher.fetch(checkerConfig.url());
@@ -60,6 +80,12 @@ public abstract class AbstractChecker implements Checker {
         return filteredProductList;
     }
 
+    /**
+     * Retrieves and filters the list of products from the HTTP response.
+     *
+     * @param response The HTTP response containing the search results page.
+     * @return A list of filtered products.
+     */
     private List<Product> getAndFilterItemsList(HttpResponse<String> response) {
         List<Product> unfilteredProductList = getUnfilteredItemList(response);
         if (checkerConfig.regexFilter() != null && !checkerConfig.regexFilter().isBlank()) {
@@ -70,6 +96,11 @@ public abstract class AbstractChecker implements Checker {
         return unfilteredProductList;
     }
 
+    /**
+     * Retrieves the name of the checker.
+     *
+     * @return The name of the checker.
+     */
     public String getName() {
         return checkerConfig.name();
     }
