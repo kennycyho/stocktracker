@@ -51,7 +51,7 @@ public class CooldownService {
      * @param product the product to set or refresh the cooldown for
      */
     public void setOrRefreshCooldown(Product product) {
-        Cooldown cooldown = findOrCreate(product.url());
+        Cooldown cooldown = findOrInstantiate(product.url());
         cooldown.setLastSeen(LocalDateTime.now());
         cooldownRepository.save(cooldown);
     }
@@ -62,7 +62,7 @@ public class CooldownService {
      * @param product the product to disable the notifications for
      */
     public void disable(Product product) {
-        Cooldown cooldown = findOrCreate(product.url());
+        Cooldown cooldown = findOrInstantiate(product.url());
         cooldown.setDisabled(true);
         cooldownRepository.save(cooldown);
     }
@@ -95,7 +95,7 @@ public class CooldownService {
      * @param url the URL of the product
      * @return the found or created cooldown
      */
-    private Cooldown findOrCreate(String url) {
+    private Cooldown findOrInstantiate(String url) {
         return cooldownRepository.findByUrl(url).orElseGet(() -> {
             Cooldown c = new Cooldown();
             c.setUrl(url);
