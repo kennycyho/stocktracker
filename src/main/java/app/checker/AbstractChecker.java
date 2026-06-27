@@ -1,5 +1,6 @@
 package app.checker;
 
+import app.cooldown.CooldownService;
 import app.dto.CheckerConfig;
 import app.dto.Product;
 import app.fetcher.HttpFetcher;
@@ -21,6 +22,7 @@ public abstract class AbstractChecker implements Checker {
     protected final HttpFetcher httpFetcher;
     protected final Notifier notifier;
     protected final CheckerConfig checkerConfig;
+    private final CooldownService cooldownService;
 
     /**
      * Constructs an instance of AbstractChecker with the provided dependencies.
@@ -29,10 +31,11 @@ public abstract class AbstractChecker implements Checker {
      * @param notifier      The notifier to use for sending notifications.
      * @param checkerConfig Configuration settings for the checker.
      */
-    protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
+    protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig, CooldownService cooldownService) {
         this.httpFetcher = httpFetcher;
         this.notifier = notifier;
         this.checkerConfig = checkerConfig;
+        this.cooldownService = cooldownService;
     }
 
     /**
@@ -51,8 +54,13 @@ public abstract class AbstractChecker implements Checker {
         List<Product> productList = getFilteredItemList();
         if (!productList.isEmpty()) {
             logger.info("Found items for product {}", checkerConfig.name());
-            notifier.send(checkerConfig.name() + " is in stock with " + productList.size() + " items",
-                    productList);
+
+            List<Product> offCooldownProducts = cooldownService.filter(productList);
+
+            notifier.send(checkerConfig.name() + " is in stock with " + offCooldownProducts.size() + " items",
+                    offCooldownProducts);
+
+            offCooldownProducts.forEach(cooldownService::setOrRefreshCooldown);
         }
     }
 

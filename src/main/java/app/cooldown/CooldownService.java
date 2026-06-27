@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -64,6 +65,12 @@ public class CooldownService {
         Cooldown cooldown = findOrCreate(product.url());
         cooldown.setDisabled(true);
         cooldownRepository.save(cooldown);
+    }
+
+    public List<Product> filter(List<Product> products) {
+        return products.stream()
+                .filter(this::isValid)
+                .toList();
     }
 
     /**
