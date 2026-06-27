@@ -67,6 +67,12 @@ public class CooldownService {
         cooldownRepository.save(cooldown);
     }
 
+    /**
+     * Filters a list of products, returning only those that are valid based on their last seen time and whether they are disabled.
+     *
+     * @param products the list of products to filter
+     * @return a filtered list of valid products
+     */
     public List<Product> filter(List<Product> products) {
         return products.stream()
                 .filter(this::isValid)
