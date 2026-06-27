@@ -1,6 +1,5 @@
-package app;
+package app.cooldown;
 
-import app.cooldown.CooldownService;
 import app.cooldown.model.Cooldown;
 import app.cooldown.repository.CooldownRepository;
 import app.dto.Product;
