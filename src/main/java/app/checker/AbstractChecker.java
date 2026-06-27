@@ -25,8 +25,8 @@ public abstract class AbstractChecker implements Checker {
     /**
      * Constructs an instance of AbstractChecker with the provided dependencies.
      *
-     * @param httpFetcher The HTTP fetcher to use for fetching web pages.
-     * @param notifier    The notifier to use for sending notifications.
+     * @param httpFetcher   The HTTP fetcher to use for fetching web pages.
+     * @param notifier      The notifier to use for sending notifications.
      * @param checkerConfig Configuration settings for the checker.
      */
     protected AbstractChecker(HttpFetcher httpFetcher, Notifier notifier, CheckerConfig checkerConfig) {
@@ -57,7 +57,7 @@ public abstract class AbstractChecker implements Checker {
     }
 
     /**
-     * Retrieves and filters the list of products based on the checker configuration.
+     * Handles http response status codes then retrieves and filters the list of products.
      *
      * @return A filtered list of products.
      */
@@ -81,7 +81,7 @@ public abstract class AbstractChecker implements Checker {
     }
 
     /**
-     * Retrieves and filters the list of products from the HTTP response.
+     * Retrieves and filters the list of products from the HTTP response based on checker config regex.
      *
      * @param response The HTTP response containing the search results page.
      * @return A list of filtered products.
