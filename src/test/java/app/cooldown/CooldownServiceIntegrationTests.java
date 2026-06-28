@@ -3,7 +3,6 @@ package app.cooldown;
 import app.cooldown.model.Cooldown;
 import app.cooldown.repository.CooldownRepository;
 import app.dto.Product;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class CooldownServiceIntegrationTests {
@@ -35,7 +37,7 @@ public class CooldownServiceIntegrationTests {
 
     @Test
     void isValid_returnsTrue_whenNoRecordExists() {
-        Assertions.assertTrue(cooldownService.isValid(PRODUCT));
+        assertTrue(cooldownService.isValid(PRODUCT));
     }
 
     @Test
@@ -45,7 +47,7 @@ public class CooldownServiceIntegrationTests {
         c.setLastSeen(LocalDateTime.now().minusDays(10));
         cooldownRepository.save(c);
 
-        Assertions.assertTrue(cooldownService.isValid(PRODUCT));
+        assertTrue(cooldownService.isValid(PRODUCT));
     }
 
     @Test
@@ -54,7 +56,7 @@ public class CooldownServiceIntegrationTests {
         c.setUrl(PRODUCT.url());
         cooldownRepository.save(c);
 
-        Assertions.assertFalse(cooldownService.isValid(PRODUCT));
+        assertFalse(cooldownService.isValid(PRODUCT));
     }
 
     @Test
@@ -65,7 +67,7 @@ public class CooldownServiceIntegrationTests {
         c.setDisabled(true);
         cooldownRepository.save(c);
 
-        Assertions.assertFalse(cooldownService.isValid(PRODUCT));
+        assertFalse(cooldownService.isValid(PRODUCT));
     }
 
     @Test
@@ -73,8 +75,8 @@ public class CooldownServiceIntegrationTests {
         cooldownService.setOrRefreshCooldown(PRODUCT);
 
         Optional<Cooldown> c = cooldownRepository.findByUrl(PRODUCT.url());
-        Assertions.assertTrue(c.isPresent());
-        Assertions.assertTrue(c.get().getLastSeen().isAfter(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS)));
+        assertTrue(c.isPresent());
+        assertTrue(c.get().getLastSeen().isAfter(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS)));
     }
 
     @Test
@@ -87,8 +89,8 @@ public class CooldownServiceIntegrationTests {
         cooldownService.setOrRefreshCooldown(PRODUCT);
 
         Optional<Cooldown> existingCooldown = cooldownRepository.findByUrl(PRODUCT.url());
-        Assertions.assertTrue(existingCooldown.isPresent());
-        Assertions.assertTrue(existingCooldown.get()
+        assertTrue(existingCooldown.isPresent());
+        assertTrue(existingCooldown.get()
                 .getLastSeen().isAfter(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS)));
     }
 
@@ -97,8 +99,8 @@ public class CooldownServiceIntegrationTests {
         cooldownService.disable(PRODUCT);
 
         Optional<Cooldown> cd = cooldownRepository.findByUrl(PRODUCT.url());
-        Assertions.assertTrue(cd.isPresent());
-        Assertions.assertTrue(cd.get().isDisabled());
+        assertTrue(cd.isPresent());
+        assertTrue(cd.get().isDisabled());
     }
 
     @Test
@@ -110,7 +112,7 @@ public class CooldownServiceIntegrationTests {
         cooldownService.disable(PRODUCT);
 
         Optional<Cooldown> cd = cooldownRepository.findByUrl(PRODUCT.url());
-        Assertions.assertTrue(cd.isPresent());
-        Assertions.assertTrue(cd.get().isDisabled());
+        assertTrue(cd.isPresent());
+        assertTrue(cd.get().isDisabled());
     }
 }
