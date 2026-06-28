@@ -1,0 +1,44 @@
+services:
+  redis-test:
+    image: redis:7-alpine
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: stocktracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d stocktracker" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  test:
+    image: maven:3.9-eclipse-temurin-21-alpine
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - .:/app
+      - maven-cache:/root/.m2
+    environment:
+      SPRING_DATA_REDIS_HOST: redis-test
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-test:5432/stocktracker
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    command: >
+      mvn -Dtest="CooldownCacheServiceIntegrationTests,CooldownServiceIntegrationTests"
+          -DfailIfNoTests=false test
+
+volumes:
+  maven-cache:
