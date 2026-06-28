@@ -9,6 +9,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
 import java.util.Optional;
 
+/**
+ * Service for managing cooldowns in Redis.
+ */
 public class CooldownCacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CooldownCacheService.class);
@@ -17,17 +20,28 @@ public class CooldownCacheService {
     private final RedisTemplate<String, Cooldown> redisTemplate;
     private final Duration ttl;
 
+    /**
+     * Constructs a new CooldownCacheService.
+     *
+     * @param redisTemplate the Redis template for interacting with Redis
+     * @param interval      the cooldown interval in milliseconds
+     */
     public CooldownCacheService(RedisTemplate<String, Cooldown> redisTemplate,
                                 @Value("${cooldown.interval-ms}") long interval) {
         this.redisTemplate = redisTemplate;
         this.ttl = Duration.ofMillis(interval);
     }
 
+    /**
+     * Retrieves a cooldown from Redis.
+     *
+     * @param url the URL of the cooldown
+     * @return an Optional containing the Cooldown if found, or an empty Optional otherwise
+     */
     public Optional<Cooldown> get(String url) {
         String key = KEY_PREFIX + url;
         try {
-            Cooldown cached = redisTemplate.opsForValue().get(key);
-            return Optional.ofNullable(cached);
+            return Optional.ofNullable(redisTemplate.opsForValue().get(key));
         }
         catch (Exception e) {
             LOGGER.warn("Redis get failed for url={}, falling back to DB", url, e);
@@ -35,6 +49,11 @@ public class CooldownCacheService {
         }
     }
 
+    /**
+     * Puts a cooldown into Redis.
+     *
+     * @param cooldown the Cooldown to put
+     */
     public void put(Cooldown cooldown) {
         try {
             redisTemplate.opsForValue().set(KEY_PREFIX + cooldown.getUrl(), cooldown, ttl);
@@ -44,6 +63,11 @@ public class CooldownCacheService {
         }
     }
 
+    /**
+     * Evicts a cooldown from Redis.
+     *
+     * @param url the URL of the cooldown to evict
+     */
     public void evict(String url) {
         try {
             redisTemplate.delete(KEY_PREFIX + url);
