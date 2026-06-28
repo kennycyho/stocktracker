@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import java.util.Optional;
 /**
  * Service for managing cooldowns in Redis.
  */
+@Service
 public class CooldownCacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CooldownCacheService.class);
