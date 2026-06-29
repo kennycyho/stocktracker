@@ -29,6 +29,9 @@ public class CooldownServiceIntegrationTests {
     CooldownService cooldownService;
 
     @Autowired
+    CooldownCacheService cacheService;
+
+    @Autowired
     RedisTemplate<String, Cooldown> redisTemplate;
 
     @Value("${cooldown.interval-ms}")
@@ -121,5 +124,49 @@ public class CooldownServiceIntegrationTests {
         Optional<Cooldown> cd = cooldownRepository.findByUrl(PRODUCT.url());
         assertTrue(cd.isPresent());
         assertTrue(cd.get().isDisabled());
+    }
+
+    // begin cache tests
+
+    @Test
+    void isValid_returnsFalse_whenOnCooldownInCacheOnly() {
+        // Seed Redis directly — nothing in Postgres
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        c.setLastSeen(LocalDateTime.now()); // on cooldown
+        cacheService.put(c);
+
+        assertFalse(cooldownService.isValid(PRODUCT));
+    }
+
+    @Test
+    void isValid_returnsTrue_whenOffCooldownInCacheOnly() {
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        c.setLastSeen(LocalDateTime.now().minusDays(10)); // off cooldown
+        cacheService.put(c);
+
+        assertTrue(cooldownService.isValid(PRODUCT));
+    }
+
+    @Test
+    void isValid_populatesCache_whenFoundInDb() {
+        Cooldown c = new Cooldown();
+        c.setUrl(PRODUCT.url());
+        c.setLastSeen(LocalDateTime.now().minusDays(10));
+        cooldownRepository.save(c);
+
+        cooldownService.isValid(PRODUCT); // triggers findCooldown → DB hit → cacheService.put
+
+        assertTrue(cacheService.get(PRODUCT.url()).isPresent());
+    }
+
+    @Test
+    void setOrRefreshCooldown_writesToCache() {
+        cooldownService.setOrRefreshCooldown(PRODUCT);
+
+        Optional<Cooldown> cached = cacheService.get(PRODUCT.url());
+        assertTrue(cached.isPresent());
+        assertFalse(cached.get().isDisabled());
     }
 }
