@@ -18,6 +18,7 @@ import java.util.Optional;
 public class CooldownService {
 
     private final CooldownRepository cooldownRepository;
+    private final CooldownCacheService cacheService;
     private final Long interval;
 
     /**
@@ -26,9 +27,13 @@ public class CooldownService {
      * @param cooldownRepository the repository to interact with the cooldown data
      * @param interval           the cooldown interval in milliseconds
      */
-    public CooldownService(CooldownRepository cooldownRepository,
-                           @Value("${cooldown.interval-ms}") Long interval) {
+    public CooldownService(
+            CooldownRepository cooldownRepository,
+            CooldownCacheService cacheService,
+            @Value("${cooldown.interval-ms}") Long interval
+    ) {
         this.cooldownRepository = cooldownRepository;
+        this.cacheService = cacheService;
         this.interval = interval;
     }
 
@@ -40,9 +45,8 @@ public class CooldownService {
      * @return true if the product is valid, false otherwise
      */
     public boolean isValid(Product product) {
-        Optional<Cooldown> cooldownOptional = cooldownRepository.findByUrl(product.url());
-        return cooldownOptional.isEmpty()
-                || !cooldownOptional.get().isDisabled() && isOffCooldown(cooldownOptional.get());
+        Optional<Cooldown> cooldown = findCooldown(product.url());
+        return cooldown.map(this::isValidCooldown).orElse(true);
     }
 
     /**
@@ -51,9 +55,10 @@ public class CooldownService {
      * @param product the product to set or refresh the cooldown for
      */
     public void setOrRefreshCooldown(Product product) {
-        Cooldown cooldown = findOrInstantiate(product.url());
+        Cooldown cooldown = fetchOrInstantiate(product.url());
         cooldown.setLastSeen(LocalDateTime.now());
         cooldownRepository.save(cooldown);
+        cacheService.put(cooldown);
     }
 
     /**
@@ -62,9 +67,10 @@ public class CooldownService {
      * @param product the product to disable the notifications for
      */
     public void disable(Product product) {
-        Cooldown cooldown = findOrInstantiate(product.url());
+        Cooldown cooldown = fetchOrInstantiate(product.url());
         cooldown.setDisabled(true);
         cooldownRepository.save(cooldown);
+        cacheService.put(cooldown);
     }
 
     /**
@@ -79,28 +85,33 @@ public class CooldownService {
                 .toList();
     }
 
-    /**
-     * Checks if a cooldown is expired based on the last seen time and the configured interval.
-     *
-     * @param cooldown the cooldown to check
-     * @return true if the cooldown is expired, false otherwise
-     */
-    private boolean isOffCooldown(Cooldown cooldown) {
-        return cooldown.getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
+    private Optional<Cooldown> findCooldown(String url) {
+        Optional<Cooldown> cached = cacheService.get(url);
+        if (cached.isPresent()) return cached;
+
+        Optional<Cooldown> stored = cooldownRepository.findByUrl(url);
+        stored.ifPresent(cacheService::put);
+        return stored;
     }
 
     /**
-     * Finds or creates a cooldown for a given URL.
+     * Fetches from database or creates a cooldown for a given URL.
      *
      * @param url the URL of the product
-     * @return the found or created cooldown
+     * @return the fetched or created cooldown
      */
-    private Cooldown findOrInstantiate(String url) {
-        return cooldownRepository.findByUrl(url).orElseGet(() -> {
-            Cooldown c = new Cooldown();
-            c.setUrl(url);
-            return c;
-        });
+    private Cooldown fetchOrInstantiate(String url) {
+        return cooldownRepository.findByUrl(url)
+                .orElseGet(() -> {
+                    Cooldown c = new Cooldown();
+                    c.setUrl(url);
+                    return c;
+                });
+    }
+
+    private boolean isValidCooldown(Cooldown cooldown) {
+        if (cooldown.isDisabled()) return false;
+        return cooldown.getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
     }
 
 }
