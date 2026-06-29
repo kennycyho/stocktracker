@@ -10,9 +10,10 @@ import app.fetcher.HttpFetcher;
 import app.notifier.Notifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
@@ -41,13 +42,12 @@ public class AppConfig {
     public List<Checker> checkers(ObjectMapper mapper,
                                   HttpFetcher fetcher,
                                   Notifier notifier,
-                                  CooldownService cooldownService)
-            throws IOException {
+                                  CooldownService cooldownService,
+                                  @Value("${app.checkers-file}") String checkersFilePath) throws IOException {
         List<CheckerConfig> configList = mapper.readValue(
-                new ClassPathResource("checkers.json").getInputStream(),
+                new FileSystemResource(checkersFilePath).getInputStream(),
                 new TypeReference<>() {
-                }
-        );
+                });
 
         Map<String, Function<CheckerConfig, Checker>> checkFactory = Map.of(
                 "cooksEdgeChecker", c ->

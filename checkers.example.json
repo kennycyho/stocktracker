@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Example Shop",
+    "checker": "ExampleChecker",
+    "url": "https://example.com/shop",
+    "regexFilter": null
+  }
+]
