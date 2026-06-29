@@ -25,6 +25,7 @@ public class CooldownService {
      * Constructs a new instance of CooldownService with the given repository and cooldown interval.
      *
      * @param cooldownRepository the repository to interact with the cooldown data
+     * @param cacheService       the service to manage cooldown cache
      * @param interval           the cooldown interval in milliseconds
      */
     public CooldownService(
@@ -85,6 +86,12 @@ public class CooldownService {
                 .toList();
     }
 
+    /**
+     * Retrieves the cooldown for a given URL from cache or database.
+     *
+     * @param url the URL of the product
+     * @return an Optional containing the cooldown if found, otherwise an empty Optional
+     */
     private Optional<Cooldown> findCooldown(String url) {
         Optional<Cooldown> cached = cacheService.get(url);
         if (cached.isPresent()) return cached;
@@ -95,7 +102,7 @@ public class CooldownService {
     }
 
     /**
-     * Fetches from database or creates a cooldown for a given URL.
+     * Fetches or creates a cooldown for a given URL.
      *
      * @param url the URL of the product
      * @return the fetched or created cooldown
@@ -109,6 +116,12 @@ public class CooldownService {
                 });
     }
 
+    /**
+     * Checks if a cooldown is valid based on the last seen time and whether it's disabled.
+     *
+     * @param cooldown the cooldown to check
+     * @return true if the cooldown is valid, false otherwise
+     */
     private boolean isValidCooldown(Cooldown cooldown) {
         if (cooldown.isDisabled()) return false;
         return cooldown.getLastSeen().isBefore(LocalDateTime.now().minus(interval, ChronoUnit.MILLIS));
