@@ -30,6 +30,7 @@ services:
     volumes:
       - .:/app
       - maven-cache:/root/.m2
+      - ./checkers.json:/config/checkers.json:ro
     environment:
       SPRING_DATA_REDIS_HOST: redis-test
       SPRING_DATA_REDIS_PORT: 6379
