@@ -38,8 +38,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     command: >
-      mvn -Dtest="CooldownCacheServiceIntegrationTests,CooldownServiceIntegrationTests"
-          -DfailIfNoTests=false test
+      mvn -DfailIfNoTests=false test
 
 volumes:
   maven-cache:
