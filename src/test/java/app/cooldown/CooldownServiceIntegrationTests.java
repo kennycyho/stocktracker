@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,9 @@ public class CooldownServiceIntegrationTests {
     @Autowired
     CooldownService cooldownService;
 
+    @Autowired
+    RedisTemplate<String, Cooldown> redisTemplate;
+
     @Value("${cooldown.interval-ms}")
     Long interval;
 
@@ -35,6 +39,7 @@ public class CooldownServiceIntegrationTests {
     @BeforeEach
     void setUp() {
         cooldownRepository.deleteAll();
+        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
     @Test
