@@ -46,7 +46,7 @@ public class CooksEdgeChecker extends AbstractChecker {
         for (Element product : products) {
             Element itemTag = product.selectFirst("a");
             if (itemTag != null) {
-                String href = itemTag.absUrl("href");
+                String href = itemTag.absUrl("href").split("\\?")[0];
                 String text = itemTag.text();
                 if (text.isBlank()) {
                     logger.error("Could not get title for product: {}", product.outerHtml());

@@ -41,7 +41,7 @@ public class StaySharpChecker extends AbstractChecker {
             for (Element product : products) {
                 Element titleText = product.selectFirst("a[class=yv-product-title text]");
                 if (titleText != null) {
-                    String href = titleText.absUrl("href");
+                    String href = titleText.absUrl("href").split("\\?")[0];
                     String title = titleText.attr("title");
                     unfilteredProductList.add(new Product(title, href));
                 }

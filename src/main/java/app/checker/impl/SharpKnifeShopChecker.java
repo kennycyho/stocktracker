@@ -45,7 +45,7 @@ public class SharpKnifeShopChecker extends AbstractChecker {
 
         Elements products = collection.select("a.stretched-link");
         for (Element product : products) {
-            String href = product.absUrl("href");
+            String href = product.absUrl("href").split("\\?")[0];
             String text = product.text();
             if (text.isBlank()) {
                 logger.error("Could not get title for product: {}", product.outerHtml());
