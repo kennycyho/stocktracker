@@ -13,8 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -124,6 +127,73 @@ public class CooldownServiceIntegrationTests {
         Optional<Cooldown> cd = cooldownRepository.findByUrl(PRODUCT.url());
         assertTrue(cd.isPresent());
         assertTrue(cd.get().isDisabled());
+    }
+
+    @Test
+    void filter_returnsAllProducts_whenAllAreValid() {
+        Product p1 = new Product("P1", "http://p1.com");
+        Product p2 = new Product("P2", "http://p2.com");
+        List<Product> products = Arrays.asList(p1, p2);
+
+        List<Product> result = cooldownService.filter(products);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains(p1));
+        assertTrue(result.contains(p2));
+    }
+
+    @Test
+    void filter_returnsOnlyValidProducts_whenSomeAreInvalid() {
+        Product pValid1 = new Product("Valid1", "http://valid1.com");
+        Product pOnCooldown = new Product("OnCooldown", "http://oncooldown.com");
+        Product pDisabled = new Product("Disabled", "http://disabled.com");
+        Product pValid2 = new Product("Valid2", "http://valid2.com");
+
+        Cooldown c1 = new Cooldown();
+        c1.setUrl(pOnCooldown.url());
+        c1.setLastSeen(LocalDateTime.now());
+        cooldownRepository.save(c1);
+
+        Cooldown c2 = new Cooldown();
+        c2.setUrl(pDisabled.url());
+        c2.setDisabled(true);
+        cooldownRepository.save(c2);
+
+        List<Product> products = Arrays.asList(pValid1, pOnCooldown, pDisabled, pValid2);
+        List<Product> result = cooldownService.filter(products);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains(pValid1));
+        assertTrue(result.contains(pValid2));
+        assertFalse(result.contains(pOnCooldown));
+        assertFalse(result.contains(pDisabled));
+    }
+
+    @Test
+    void filter_returnsEmptyList_whenNoneAreValid() {
+        Product p1 = new Product("P1", "http://p1.com");
+        Product p2 = new Product("P2", "http://p2.com");
+
+        Cooldown c1 = new Cooldown();
+        c1.setUrl(p1.url());
+        c1.setLastSeen(LocalDateTime.now());
+        cooldownRepository.save(c1);
+
+        Cooldown c2 = new Cooldown();
+        c2.setUrl(p2.url());
+        c2.setDisabled(true);
+        cooldownRepository.save(c2);
+
+        List<Product> products = Arrays.asList(p1, p2);
+        List<Product> result = cooldownService.filter(products);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void filter_returnsEmptyList_whenInputIsEmpty() {
+        List<Product> result = cooldownService.filter(List.of());
+        assertTrue(result.isEmpty());
     }
 
     // begin cache tests
