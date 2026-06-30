@@ -23,6 +23,14 @@ import java.util.List;
 
 public class SharpKnifeShopChecker extends AbstractChecker {
 
+    /**
+     * Constructs a new SharpKnifeShopChecker.
+     *
+     * @param httpFetcher the HTTP fetcher for making requests
+     * @param notifier the notifier for sending alerts
+     * @param cooldownService the cooldown service for rate limiting
+     * @param checkerConfig the configuration for this checker
+     */
     public SharpKnifeShopChecker(HttpFetcher httpFetcher,
                                  Notifier notifier,
                                  CooldownService cooldownService,
@@ -30,6 +38,12 @@ public class SharpKnifeShopChecker extends AbstractChecker {
         super(httpFetcher, notifier, cooldownService, checkerConfig);
     }
 
+    /**
+     * Parses the HTTP response and extracts all products from the page.
+     *
+     * @param response the HTTP response containing the page HTML
+     * @return a list of products found on the page
+     */
     public List<Product> getUnfilteredItemList(HttpResponse<String> response) {
         List<Product> unfilteredProductList = new ArrayList<>();
         Document doc = Jsoup.parse(response.body());
@@ -56,6 +70,12 @@ public class SharpKnifeShopChecker extends AbstractChecker {
         return unfilteredProductList;
     }
 
+    /**
+     * Checks if the page contains search results by examining the page title.
+     *
+     * @param doc the parsed HTML document
+     * @return true if the page has search results, false otherwise
+     */
     private boolean hasSearchResults(Document doc) {
         Element title = doc.selectXpath("head/title").first();
         if (title != null) {

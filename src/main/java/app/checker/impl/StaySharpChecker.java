@@ -23,6 +23,14 @@ import java.util.List;
 
 public class StaySharpChecker extends AbstractChecker {
 
+    /**
+     * Constructs a new StaySharpChecker.
+     *
+     * @param httpFetcher the HTTP fetcher for making requests
+     * @param notifier the notifier for sending alerts
+     * @param cooldownService the cooldown service for rate limiting
+     * @param checkerConfig the configuration for this checker
+     */
     public StaySharpChecker(HttpFetcher httpFetcher,
                             Notifier notifier,
                             CooldownService cooldownService,
@@ -31,6 +39,12 @@ public class StaySharpChecker extends AbstractChecker {
         super(httpFetcher, notifier, cooldownService, checkerConfig);
     }
 
+    /**
+     * Parses the HTTP response and extracts all products from the page.
+     *
+     * @param response the HTTP response containing the page HTML
+     * @return a list of products found on the page
+     */
     public List<Product> getUnfilteredItemList(HttpResponse<String> response) {
         List<Product> unfilteredProductList = new ArrayList<>();
         Document doc = Jsoup.parse(response.body());

@@ -15,7 +15,7 @@ import java.util.List;
 public class Scheduler {
 
     private final Logger logger = LoggerFactory.getLogger(Scheduler.class);
-    
+
     /**
      * List of checkers to be run by the scheduler.
      */
@@ -36,8 +36,8 @@ public class Scheduler {
     @Scheduled(fixedDelayString = "${checker.interval-ms}")
     public void runChecks() {
         for (Checker checker : checkers) {
-            logger.info("Running checker: {}", checker.getName());
             try {
+                logger.info("Running checker: {}", checker.getName());
                 checker.check();
             }
             catch (Exception e) {

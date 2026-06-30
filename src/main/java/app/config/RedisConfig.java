@@ -11,9 +11,17 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+/**
+ * Configuration for Redis.
+ */
 @Configuration
 public class RedisConfig {
 
+    /**
+     * Redis configuration.
+     *
+     * @return RedisTemplate instance for Redis operations.
+     */
     @Bean
     public RedisTemplate<String, Cooldown> redisTemplate(RedisConnectionFactory connectionFactory) {
         ObjectMapper mapper = new ObjectMapper();
