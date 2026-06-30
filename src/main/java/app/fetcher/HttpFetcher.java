@@ -2,14 +2,9 @@ package app.fetcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import org.springframework.web.client.RestClient;
 
 /**
  * Service for fetching HTTP responses.
@@ -19,40 +14,33 @@ public class HttpFetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpFetcher.class);
 
-    private final HttpClient client;
+    private final RestClient restClient;
 
     /**
-     * Constructs a new HttpFetcher with a default timeout of 10 seconds.
+     * Constructs a new HttpFetcher with the provided RestClient.
+     *
+     * @param restClient the RestClient to use for fetching
      */
-    public HttpFetcher() {
-        this.client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+    public HttpFetcher(RestClient restClient) {
+        this.restClient = restClient;
     }
 
     /**
      * Fetches an HTTP response from the specified URL.
      *
      * @param url the URL to fetch
-     * @return the HttpResponse, or null if an error occurs
+     * @return the ResponseEntity, or null if an error occurs
      */
-    public HttpResponse<String> fetch(String url) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(10))
-                .build();
-
-        HttpResponse<String> response = null;
+    public ResponseEntity<String> fetch(String url) {
+        ResponseEntity<String> response = null;
         try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 400) {
-                logger.debug("Page returned status: {}. Url: {}", response.statusCode(), url);
+            response = restClient.get().uri(url).retrieve().toEntity(String.class);
+            if (response.getStatusCode().value() >= 400) {
+                logger.debug("Page returned status: {}. Url: {}", response.getStatusCode(), url);
             }
-        } catch (IOException e) {
+        }
+        catch (Exception e) {
             logger.error("Url could not be fetched: {}", url, e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Fetch interrupted for url: {}", url, e);
         }
         return response;
     }

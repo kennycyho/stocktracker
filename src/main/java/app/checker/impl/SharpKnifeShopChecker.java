@@ -12,7 +12,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.net.URI;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,12 +40,12 @@ public class SharpKnifeShopChecker extends AbstractChecker {
     /**
      * Parses the HTTP response and extracts all products from the page.
      *
-     * @param response the HTTP response containing the page HTML
+     * @param responseBody the HTTP response body containing the page HTML
      * @return a list of products found on the page
      */
-    public List<Product> getUnfilteredItemList(HttpResponse<String> response) {
+    public List<Product> getUnfilteredItemList(String responseBody) {
         List<Product> unfilteredProductList = new ArrayList<>();
-        Document doc = Jsoup.parse(response.body());
+        Document doc = Jsoup.parse(responseBody);
         doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
 
         if (!hasSearchResults(doc)) return unfilteredProductList;
