@@ -60,6 +60,7 @@ public abstract class AbstractChecker implements Checker {
 
             List<Product> offCooldownProducts = cooldownService.filter(productList);
 
+            logger.info("Sending notification for {} items", offCooldownProducts.size());
             notifier.send(checkerConfig.name() + " is in stock with " + offCooldownProducts.size() + " items",
                     offCooldownProducts);
 
