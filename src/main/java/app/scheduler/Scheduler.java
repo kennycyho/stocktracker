@@ -14,8 +14,8 @@ import java.util.List;
 @Service
 public class Scheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class);
-
+    private final Logger logger = LoggerFactory.getLogger(Scheduler.class);
+    
     /**
      * List of checkers to be run by the scheduler.
      */
@@ -36,12 +36,12 @@ public class Scheduler {
     @Scheduled(fixedDelayString = "${checker.interval-ms}")
     public void runChecks() {
         for (Checker checker : checkers) {
-            LOGGER.info("Running checker: {}", checker.getName());
+            logger.info("Running checker: {}", checker.getName());
             try {
                 checker.check();
             }
             catch (Exception e) {
-                LOGGER.error("Checker {} threw an unexpected exception", checker.getName(), e);
+                logger.error("Checker {} threw an unexpected exception", checker.getName(), e);
             }
         }
     }

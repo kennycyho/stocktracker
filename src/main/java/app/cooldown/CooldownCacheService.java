@@ -16,7 +16,7 @@ import java.util.Optional;
 @Service
 public class CooldownCacheService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CooldownCacheService.class);
+    private final Logger logger = LoggerFactory.getLogger(CooldownCacheService.class);
     private static final String KEY_PREFIX = "cooldown:";
 
     private final RedisTemplate<String, Cooldown> redisTemplate;
@@ -46,7 +46,7 @@ public class CooldownCacheService {
             return Optional.ofNullable(redisTemplate.opsForValue().get(key));
         }
         catch (Exception e) {
-            LOGGER.warn("Redis get failed for url={}, falling back to DB", url, e);
+            logger.warn("Redis get failed for url={}, falling back to DB", url, e);
             return Optional.empty();
         }
     }
@@ -61,7 +61,7 @@ public class CooldownCacheService {
             redisTemplate.opsForValue().set(KEY_PREFIX + cooldown.getUrl(), cooldown, ttl);
         }
         catch (Exception e) {
-            LOGGER.warn("Redis put failed for url={}", cooldown.getUrl(), e);
+            logger.warn("Redis put failed for url={}", cooldown.getUrl(), e);
         }
     }
 
@@ -75,7 +75,7 @@ public class CooldownCacheService {
             redisTemplate.delete(KEY_PREFIX + url);
         }
         catch (Exception e) {
-            LOGGER.warn("Redis evict failed for url={}", url, e);
+            logger.warn("Redis evict failed for url={}", url, e);
         }
     }
 
