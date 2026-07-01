@@ -25,10 +25,10 @@ public class SharpKnifeShopChecker extends AbstractChecker {
     /**
      * Constructs a new SharpKnifeShopChecker.
      *
-     * @param httpFetcher the HTTP fetcher for making requests
-     * @param notifier the notifier for sending alerts
+     * @param httpFetcher     the HTTP fetcher for making requests
+     * @param notifier        the notifier for sending alerts
      * @param cooldownService the cooldown service for rate limiting
-     * @param checkerConfig the configuration for this checker
+     * @param checkerConfig   the configuration for this checker
      */
     public SharpKnifeShopChecker(HttpFetcher httpFetcher,
                                  Notifier notifier,
@@ -46,7 +46,7 @@ public class SharpKnifeShopChecker extends AbstractChecker {
     public List<Product> getUnfilteredItemList(String responseBody) {
         List<Product> unfilteredProductList = new ArrayList<>();
         Document doc = Jsoup.parse(responseBody);
-        doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
+        doc.setBaseUri(URI.create(getCheckerConfig().url()).resolve("/").toString());
 
         if (!hasSearchResults(doc)) return unfilteredProductList;
 

@@ -20,10 +20,10 @@ public abstract class AbstractChecker implements Checker {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected final HttpFetcher httpFetcher;
-    protected final Notifier notifier;
-    protected final CheckerConfig checkerConfig;
+    private final HttpFetcher httpFetcher;
+    private final Notifier notifier;
     private final CooldownService cooldownService;
+    private final CheckerConfig checkerConfig;
 
     /**
      * Constructs an instance of AbstractChecker with the provided dependencies.
@@ -57,7 +57,7 @@ public abstract class AbstractChecker implements Checker {
     public void check() {
         List<Product> productList = getFilteredItemList();
         if (productList.isEmpty()) return;
-        
+
         logger.info("Found {} items for product {}", productList.size(), checkerConfig.name());
 
         List<Product> offCooldownProducts = cooldownService.filter(productList);
@@ -118,5 +118,9 @@ public abstract class AbstractChecker implements Checker {
      */
     public String getName() {
         return checkerConfig.name();
+    }
+
+    protected CheckerConfig getCheckerConfig() {
+        return checkerConfig;
     }
 }

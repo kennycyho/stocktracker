@@ -25,10 +25,10 @@ public class CooksEdgeChecker extends AbstractChecker {
     /**
      * Constructs a new CooksEdgeChecker.
      *
-     * @param httpFetcher the HTTP fetcher for making requests
-     * @param notifier the notifier for sending alerts
+     * @param httpFetcher     the HTTP fetcher for making requests
+     * @param notifier        the notifier for sending alerts
      * @param cooldownService the cooldown service for rate limiting
-     * @param checkerConfig the configuration for this checker
+     * @param checkerConfig   the configuration for this checker
      */
     public CooksEdgeChecker(HttpFetcher httpFetcher,
                             Notifier notifier,
@@ -36,7 +36,7 @@ public class CooksEdgeChecker extends AbstractChecker {
                             CheckerConfig checkerConfig) {
         super(httpFetcher, notifier, cooldownService, checkerConfig);
     }
-    
+
     /**
      * Parses the HTTP response and extracts all products from the page.
      *
@@ -46,7 +46,7 @@ public class CooksEdgeChecker extends AbstractChecker {
     public List<Product> getUnfilteredItemList(String responseBody) {
         List<Product> unfilteredProductList = new ArrayList<>();
         Document doc = Jsoup.parse(responseBody);
-        doc.setBaseUri(URI.create(checkerConfig.url()).resolve("/").toString());
+        doc.setBaseUri(URI.create(getCheckerConfig().url()).resolve("/").toString());
 
         Element searchWindow = doc.selectFirst("div.search__window");
 
