@@ -1,117 +1,124 @@
-# Stock Tracker
+# StockTracker — Automated E-Commerce Restock Monitor & Email Alerting Service
 
-A Spring Boot application that monitors product pages for in-stock items, parses the HTML structure, tracks item
-notification status via PostgreSQL, and sends instant email alerts when stock becomes available.
+## Overview
 
-## Core Features
+StockTracker is a Spring Boot service that continuously polls e-commerce product listing pages, parses their HTML for
+in-stock items, and emails alerts the moment a tracked product reappears. It's built for a real use case: monitoring
+niche retailers (specialty knife shops) for limited restocks, but the design generalizes to any
+site-scraping-and-notify workflow. The interesting engineering here is the pluggable checker architecture, a two-tier (
+Redis + Postgres) cooldown system that prevents duplicate notifications while staying resilient to cache outages, and a
+fully containerized, config-driven deployment model that requires no code changes to add a new target site.
 
-- **Automated Scraping:** Periodically pulls search result pages and applies CSS query selection via Jsoup.
-- **Smart Notification Filtering:** Implements a cooldown system to prevent spamming your inbox for the same product.
-- **Dynamic Extensibility:** Uses a factory map pattern to register target site strategies via a central JSON file
-  without modifying core application beans.
-- **Resilient Scheduling:** Sequential execution isolation ensures a single site failure or network timeout won't block
-  subsequent trackers.
+## Tech Stack
 
----
+| Category                | Technology                                                                             |
+|-------------------------|----------------------------------------------------------------------------------------|
+| **Language / Runtime**  | Java 21                                                                                |
+| **Framework**           | Spring Boot 3.3 (Web, Scheduling, Mail, Data JPA, Data Redis)                          |
+| **HTML Parsing**        | jsoup 1.22.2 (CSS-selector-based scraping)                                             |
+| **Persistence**         | PostgreSQL 16 (via Spring Data JPA / Hibernate)                                        |
+| **Caching**             | Redis 7 (Spring Data Redis, JSON-serialized entities)                                  |
+| **Notifications**       | JavaMailSender / SMTP (Gmail)                                                          |
+| **HTTP Client**         | Spring `RestClient`                                                                    |
+| **Testing**             | JUnit 5 / Spring Boot Test                                                             |
+| **Containerization**    | Docker (multi-stage build), Docker Compose                                             |
+| **CI-oriented Tooling** | Dedicated `compose.test.yaml` + shell script for isolated containerized test runs      |
+| **Config**              | Externalized via `application.properties`, `.env`, and a hot-swappable `checkers.json` |
 
-## Technical Stack
+## Architecture Highlights
 
-- **Language:** Java 21
-- **Framework:** Spring Boot 3.3 (Data JPA, Mail, Validation)
-- **Database:** PostgreSQL 16
-- **Parsing Library:** Jsoup
-- **Deployment:** Docker / Docker Compose
+- **Strategy pattern for site-specific scraping.** `Checker` is an interface, `AbstractChecker` owns the shared
+  pipeline (fetch → parse → regex-filter → cooldown-filter → notify → refresh cooldown), and each retailer (
+  `CooksEdgeChecker`, `SharpKnifeShopChecker`, `StaySharpChecker`) only implements HTML parsing for its own DOM
+  structure. Adding a new site means writing one class and one JSON entry, the orchestration logic is untouched.
+- **Config-driven checker registry, no redeploys for new targets.** `AppConfig` builds the list of active `Checker`
+  beans at startup by reading a `checkers.json` file (mounted as a read-only volume) and mapping each entry's `checker`
+  field to a factory function via a `Map<String, Function<CheckerConfig, Checker>>`. New sites can be enabled/disabled
+  by editing config, not code.
+- **Two-tier cooldown system with graceful cache degradation.** `CooldownService` checks Redis first via
+  `CooldownCacheService`, falling back to Postgres on a cache miss and repopulating the cache afterward. Every Redis
+  operation is wrapped in try/catch that logs and falls back to the database rather than failing the request, a
+  deliberate resilience choice so a Redis outage degrades performance, not correctness.
+- **Fault-isolated scheduled execution.** `Scheduler` iterates all registered checkers on a fixed delay and catches
+  exceptions per-checker, so one site's parsing failure (e.g., a broken CSS selector after a redesign) never blocks or
+  crashes the checks for every other tracked site.
+- **Security-conscious multi-stage Docker build.** The image separates a Maven build stage from a minimal
+  `eclipse-temurin:21-jre-alpine` runtime stage, runs as a non-root user, and pulls all secrets (mail credentials, DB
+  password) from environment variables rather than baking them into the image.
 
----
+## Getting Started
 
-## Project Architecture & Structure
+### Prerequisites
 
-```text
+- Docker and Docker Compose
+- (For local development without Docker) JDK 21 and Maven
+
+### Run with Docker Compose
+
+1. Copy the example environment file and fill in credentials:
+   ```bash
+   cp .env.example .env
+   ```
+   Set `MAIL_USERNAME`, `MAIL_PASSWORD` (an SMTP app password), `NOTIFIER_RECIPIENT`, and `DB_PASSWORD`.
+
+2. Copy the example checker config and define the products/sites to track:
+   ```bash
+   cp checkers.example.json checkers.json
+   ```
+
+3. Build the image and start the stack (app + Postgres + Redis):
+   ```bash
+   docker build -t ghcr.io/kennycyho/stocktracker:latest .
+   docker compose up -d
+   ```
+
+### Run tests in an isolated container
+
+```bash
+docker compose -f compose.test.yaml up --abort-on-container-exit --exit-code-from test
+docker compose -f compose.test.yaml down
+```
+
+This spins up a dedicated test compose stack (`compose.test.yaml`), runs the suite to completion, and tears the stack
+down.
+
+### Configuration reference
+
+Key tunables live in `src/main/resources/application.properties`:
+
+- `checker.interval-ms` — how often all checkers run (default: 30 minutes)
+- `cooldown.interval-ms` — minimum time before re-notifying on the same product (default: 1 week)
+- `app.checkers-file` — path to the mounted `checkers.json`
+
+## Project Structure
+
+```
 src/main/java/app/
- ├── Application.java               # Main application entry point
- ├── checker/                       
- │    ├── Checker.java              # Interface definition for checkers
- │    ├── AbstractChecker.java      # Base scraper logic, HTTP response filtering, and regex piping
- │    └── impl/                     # Site-specific scraper strategies (Jsoup parsers)
- │         ├── CooksEdgeChecker.java
- │         ├── SharpKnifeShopChecker.java
- │         └── StaySharpChecker.java
- ├── config/
- │    └── AppConfig.java            # Factory wiring mapping configs to proper Checker instances
- ├── cooldown/                      # Domain logic for managing notification state
- │    ├── CooldownService.java      
- │    ├── model/Cooldown.java       # JPA Entity for state tracking
- │    └── repository/CooldownRepository.java
- ├── dto/                           # Immutable records for configuration and items
- │    ├── CheckerConfig.java
- │    └── Product.java
- ├── fetcher/
- │    └── HttpFetcher.java          # Null-safe HttpClient wrapper with request timeouts
- ├── notifier/                      # Alerts system
- │    ├── Notifier.java
- │    └── impl/EmailNotifier.java   # Spring Mail integration with cooldown validation
- └── scheduler/
-      └── Scheduler.java            # Scheduled orchestration engine
-```
+├── Application.java              # Spring Boot entry point
+├── checker/
+│   ├── Checker.java               # Strategy interface
+│   ├── AbstractChecker.java       # Shared fetch → filter → notify pipeline
+│   └── impl/                      # Per-retailer HTML parsing logic
+├── scheduler/
+│   └── Scheduler.java             # Fixed-delay job that runs all checkers, isolates failures
+├── fetcher/
+│   └── HttpFetcher.java           # RestClient wrapper with defensive error handling
+├── cooldown/
+│   ├── CooldownService.java       # Cache-then-DB cooldown lookup/refresh logic
+│   ├── CooldownCacheService.java  # Redis access layer with fallback-safe error handling
+│   ├── model/Cooldown.java        # JPA entity
+│   └── repository/                # Spring Data JPA repository
+├── notifier/
+│   ├── Notifier.java               # Notification interface
+│   └── impl/EmailNotifier.java     # SMTP email implementation
+├── dto/                           # Product, CheckerConfig records
+└── config/                        # RestClient, Redis, and checker-registry bean definitions
 
----
+src/main/resources/
+├── application.properties         # Scheduling, mail, DB, Redis, checker-file settings
+└── schema.sql                     # Cooldown table DDL
 
-## Component Behavior & Strategy
-
-### 1. Scraping Layer (`AbstractChecker`)
-
-Individual site scrapers inherit from `AbstractChecker`. The network layer (`HttpFetcher`) evaluates response codes
-safely.
-
-- **Status 200:** Passes content forward to the parser.
-- **Status 5xx:** Suppressed into an informational log entry.
-- **Other Status:** Generates an application error flag.
-- Custom regex filtering is applied down the stream via `CheckerConfig.regexFilter()`.
-
-### 2. Wiring & Factory Setup (`AppConfig`)
-
-The trackers are configured decoupled from Spring context lifecycle events. `AppConfig` parses a `checkers.json` file
-inside the resources directory using Jackson. It initializes them using a functional factory pattern:
-
-```java
-Map<String, Function<CheckerConfig, Checker>>
-```
-
-Adding support for a new storefront requires creating a specialized implementation under `checker/impl/` and updating
-the factory lookup.
-
-### 3. Cooldown & Persistence (`CooldownService`)
-
-To protect against high-frequency email delivery, found links are persisted inside a PostgreSQL `COOLDOWN` schema.
-
-- **Validation:** An alert triggers only if a product URL has never been cataloged, or if it is outside the expiration
-  window.
-- **Default Window:** 1 week (Overridden via `cooldown.interval-ms`).
-
----
-
-## How to Run Locally
-
-Create a `.env` file in the root directory containing your credentials:
-
-```env
-DB_PASSWORD=your_secure_db_password
-MAIL_USERNAME=your_sender_email@gmail.com
-MAIL_PASSWORD=your_email_app_password
-NOTIFIER_RECIPIENT=your_alert_destination@domain.com
-```
-
-Launch the multi-container setup via Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-This triggers the Postgres image, builds/runs the application image using a multi-stage optimized Dockerfile, executes
-`schema.sql` to initialize tables, and sets the schedule tracker intervals (defaulting to 30 minutes).
-
-To view runtime tracking logs:
-
-```bash
-docker compose logs -f stocktracker
+checkers.json / checkers.example.json  # Runtime-editable list of tracked sites
+Dockerfile                          # Multi-stage build, non-root runtime user
+compose.yaml / compose.test.yaml    # Production and test container orchestration
 ```
