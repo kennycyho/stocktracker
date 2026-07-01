@@ -21,8 +21,8 @@ public class EmailNotifier implements Notifier {
     /**
      * Constructs a new EmailNotifier with the specified mail sender and recipient email.
      *
-     * @param mailSender      the mail sender to use for sending emails
-     * @param recipientEmail  the email address of the recipient
+     * @param mailSender     the mail sender to use for sending emails
+     * @param recipientEmail the email address of the recipient
      */
     public EmailNotifier(JavaMailSender mailSender,
                          @Value("${app.notifier.recipient}") String recipientEmail) {
@@ -33,12 +33,10 @@ public class EmailNotifier implements Notifier {
     /**
      * Sends a notification with the specified title and list of products via email.
      *
-     * @param subject       the subject of the email
-     * @param products      the list of products to include in the email
+     * @param subject  the subject of the email
+     * @param products the list of products to include in the email
      */
     public void send(String subject, List<Product> products) {
-        if (products.isEmpty()) return;
-
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recipientEmail);
         message.setSubject(subject);
