@@ -84,7 +84,8 @@ public abstract class AbstractChecker implements Checker {
         logger.debug("Found {} items for product {}", unfilteredProductList.size(), checkerConfig.name());
 
         List<Product> filteredProductList = filterByRegex(unfilteredProductList);
-        logger.debug("Filtered list contains {} items for product {}", filteredProductList.size(), checkerConfig.name());
+        logger.debug("Regex filtered list contains {} items for product {}",
+                filteredProductList.size(), checkerConfig.name());
         if (filteredProductList.isEmpty()) return;
 
         List<Product> offCooldownProducts = cooldownService.filter(filteredProductList);
