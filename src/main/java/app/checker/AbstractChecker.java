@@ -7,14 +7,24 @@ import app.fetcher.HttpFetcher;
 import app.notifier.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Abstract base class for checking stock from search results pages.
+ * <p>
+ * This class provides the core functionality for checking product availability:
+ * <ul>
+ *   <li>Fetching HTTP responses from configured URLs</li>
+ *   <li>Parsing product information from response bodies</li>
+ *   <li>Filtering products by regex patterns</li>
+ *   <li>Managing cooldown periods to avoid duplicate notifications</li>
+ *   <li>Sending notifications when products are in stock</li>
+ * </ul>
+ * <p>
+ * Subclasses must implement {@link #getUnfilteredItemList(String)} to parse
+ * product information from the specific HTML structure of their target websites.
  */
 public abstract class AbstractChecker implements Checker {
 
@@ -53,15 +63,31 @@ public abstract class AbstractChecker implements Checker {
 
     /**
      * Checks for available stock and sends notifications if any items are in stock.
+     * <p>
+     * This method performs the following steps:
+     * <ol>
+     *   <li>Fetches the HTTP response body from the configured URL</li>
+     *   <li>Retrieves an unfiltered list of products from the response</li>
+     *   <li>Filters products by the configured regex filter (if any)</li>
+     *   <li>Filters products by cooldown status</li>
+     *   <li>Sends a notification for products that are off cooldown</li>
+     *   <li>Refreshes cooldown for notified products</li>
+     * </ol>
      */
     @Override
     public void check() {
-        List<Product> productList = getFilteredItemList();
-        if (productList.isEmpty()) return;
+        String responseBody = fetchResponseBody();
+        if (responseBody == null) return;
 
-        logger.info("Found {} items for product {}", productList.size(), checkerConfig.name());
+        List<Product> unfilteredProductList = getUnfilteredItemList(responseBody);
+        if (unfilteredProductList.isEmpty()) return;
+        logger.debug("Found {} items for product {}", unfilteredProductList.size(), checkerConfig.name());
 
-        List<Product> offCooldownProducts = cooldownService.filter(productList);
+        List<Product> filteredProductList = filterByRegex(unfilteredProductList);
+        logger.debug("Filtered list contains {} items for product {}", filteredProductList.size(), checkerConfig.name());
+        if (filteredProductList.isEmpty()) return;
+
+        List<Product> offCooldownProducts = cooldownService.filter(filteredProductList);
         if (offCooldownProducts.isEmpty()) return;
 
         notifyAndRefreshCooldown(offCooldownProducts);
@@ -86,20 +112,20 @@ public abstract class AbstractChecker implements Checker {
     }
 
     /**
-     * Handles http response status codes then retrieves and filters the list of products.
+     * Fetches the HTTP response body from the configured URL.
+     * Handles different HTTP status codes and logs appropriate messages.
      *
-     * @return A filtered list of products.
+     * @return The response body if status is 200, null otherwise.
      */
-    private List<Product> getFilteredItemList() {
-        List<Product> filteredProductList = new ArrayList<>();
+    private String fetchResponseBody() {
+        String responseBody = null;
         ResponseEntity<String> response = httpFetcher.fetch(checkerConfig.url());
 
         if (response == null) {
             logger.warn("Fetch returned null for {}, skipping", checkerConfig.name());
         }
         else if (response.getStatusCode().value() == 200) {
-            List<Product> unfilteredProductList = getUnfilteredItemList(response.getBody());
-            filteredProductList.addAll(filterByRegex(unfilteredProductList));
+            responseBody = response.getBody();
         }
         else if (response.getStatusCode().value() >= 500) {
             logger.info("Server error while fetching {}: {}", checkerConfig.name(), response.getStatusCode().value());
@@ -107,7 +133,7 @@ public abstract class AbstractChecker implements Checker {
         else {
             logger.error("Error while fetching {}: {}", checkerConfig.name(), response.getStatusCode().value());
         }
-        return filteredProductList;
+        return responseBody;
     }
 
     /**
