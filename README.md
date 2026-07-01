@@ -60,7 +60,7 @@ fully containerized, config-driven deployment model that requires no code change
 
 2. Copy the example checker config and define the products/sites to track:
    ```bash
-   cp checkers.example.json checkers.json
+   cp checkers.json.example checkers.json
    ```
 
 3. Build the image and start the stack (app + Postgres + Redis):
@@ -115,7 +115,7 @@ src/main/resources/
 ├── application.properties         # Scheduling, mail, DB, Redis, checker-file settings
 └── schema.sql                     # Cooldown table DDL
 
-checkers.json / checkers.example.json  # Runtime-editable list of tracked sites
+checkers.json / checkers.json.example  # Runtime-editable list of tracked sites
 Dockerfile                          # Multi-stage build, non-root runtime user
 compose.yaml / compose.test.yaml    # Production and test container orchestration
 ```
