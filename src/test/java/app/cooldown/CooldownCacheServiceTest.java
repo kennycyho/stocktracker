@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class CooldownCacheServiceITest {
+public class CooldownCacheServiceTest {
 
     public static final String TEST_URL = "http://example.com";
     public static final String TEST_KEY = "cooldown:" + TEST_URL;
