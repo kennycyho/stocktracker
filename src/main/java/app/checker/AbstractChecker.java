@@ -16,7 +16,7 @@ import java.util.List;
  * <p>
  * This class provides the core functionality for checking product availability:
  * <ul>
- *   <li>Fetching HTTP responses from configured URLs</li>
+ *   <li>Orchestrating HTTP fetching via HttpFetcher</li>
  *   <li>Parsing product information from response bodies</li>
  *   <li>Filtering products by regex patterns</li>
  *   <li>Managing cooldown periods to avoid duplicate notifications</li>
@@ -76,9 +76,10 @@ public abstract class AbstractChecker implements Checker {
      */
     @Override
     public void check() {
-        String responseBody = fetchResponseBody();
-        if (responseBody == null) return;
+        ResponseEntity<String> response = httpFetcher.fetch(checkerConfig.url());
+        if (response == null || response.getStatusCode().value() != 200) return;
 
+        String responseBody = response.getBody();
         List<Product> unfilteredProductList = getUnfilteredItemList(responseBody);
         if (unfilteredProductList.isEmpty()) return;
         logger.debug("Found {} items for product {}", unfilteredProductList.size(), checkerConfig.name());
@@ -110,31 +111,6 @@ public abstract class AbstractChecker implements Checker {
      */
     protected CheckerConfig getCheckerConfig() {
         return checkerConfig;
-    }
-
-    /**
-     * Fetches the HTTP response body from the configured URL.
-     * Handles different HTTP status codes and logs appropriate messages.
-     *
-     * @return The response body if status is 200, null otherwise.
-     */
-    private String fetchResponseBody() {
-        String responseBody = null;
-        ResponseEntity<String> response = httpFetcher.fetch(checkerConfig.url());
-
-        if (response == null) {
-            logger.warn("Fetch returned null for {}, skipping", checkerConfig.name());
-        }
-        else if (response.getStatusCode().value() == 200) {
-            responseBody = response.getBody();
-        }
-        else if (response.getStatusCode().value() >= 500) {
-            logger.info("Server error while fetching {}: {}", checkerConfig.name(), response.getStatusCode().value());
-        }
-        else {
-            logger.error("Error while fetching {}: {}", checkerConfig.name(), response.getStatusCode().value());
-        }
-        return responseBody;
     }
 
     /**

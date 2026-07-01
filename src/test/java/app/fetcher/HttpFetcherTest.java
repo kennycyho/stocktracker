@@ -32,58 +32,58 @@ class HttpFetcherTest {
     @InjectMocks
     private HttpFetcher httpFetcher;
 
-    private final String testUrl = "https://example.com";
-    private final String testBody = "Hello World";
+    private static final String TEST_URL = "https://example.com";
+    private static final String TEST_BODY = "Hello World";
 
     @BeforeEach
     void setUp() {
-        // Setup the fluent API chain for RestClient
         lenient().when(restClient.get()).thenReturn(requestHeadersUriSpec);
         lenient().when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
         lenient().when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     }
 
     @Test
-    void fetch_returnsResponseEntity_whenRequestIsSuccessful() {
-        // Arrange
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>(testBody, HttpStatus.OK);
-        when(responseSpec.toEntity(String.class)).thenReturn(expectedResponse);
+    void fetch_returnsResponse_whenStatusIs200() {
+        ResponseEntity<String> response = new ResponseEntity<>(TEST_BODY, HttpStatus.OK);
+        when(responseSpec.toEntity(String.class)).thenReturn(response);
 
-        // Act
-        ResponseEntity<String> actualResponse = httpFetcher.fetch(testUrl);
+        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
 
-        // Assert
-        assertNotNull(actualResponse);
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(testBody, actualResponse.getBody());
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(TEST_BODY, result.getBody());
         verify(restClient).get();
-        verify(requestHeadersUriSpec).uri(testUrl);
+        verify(requestHeadersUriSpec).uri(TEST_URL);
     }
 
     @Test
-    void fetch_returnsResponseEntity_whenRequestReturnsErrorStatus() {
-        // Arrange
-        ResponseEntity<String> expectedResponse = new ResponseEntity<>("Not Found", HttpStatus.NOT_FOUND);
-        when(responseSpec.toEntity(String.class)).thenReturn(expectedResponse);
+    void fetch_returnsResponse_whenStatusIs4xx() {
+        ResponseEntity<String> response = new ResponseEntity<>("Not Found", HttpStatus.NOT_FOUND);
+        when(responseSpec.toEntity(String.class)).thenReturn(response);
 
-        // Act
-        ResponseEntity<String> actualResponse = httpFetcher.fetch(testUrl);
+        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
 
-        // Assert
-        assertNotNull(actualResponse);
-        assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
-        assertEquals("Not Found", actualResponse.getBody());
+        assertNotNull(result);
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
     }
 
     @Test
-    void fetch_returnsNull_whenExceptionOccurs() {
-        // Arrange
+    void fetch_returnsResponse_whenStatusIs5xx() {
+        ResponseEntity<String> response = new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        when(responseSpec.toEntity(String.class)).thenReturn(response);
+
+        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
+
+        assertNotNull(result);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+    }
+
+    @Test
+    void fetch_returnsNull_whenExceptionThrown() {
         when(responseSpec.toEntity(String.class)).thenThrow(new RuntimeException("Network error"));
 
-        // Act
-        ResponseEntity<String> actualResponse = httpFetcher.fetch(testUrl);
+        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
 
-        // Assert
-        assertNull(actualResponse);
+        assertNull(result);
     }
 }
