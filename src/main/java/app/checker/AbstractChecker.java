@@ -28,9 +28,10 @@ public abstract class AbstractChecker implements Checker {
     /**
      * Constructs an instance of AbstractChecker with the provided dependencies.
      *
-     * @param httpFetcher   The HTTP fetcher to use for fetching web pages.
-     * @param notifier      The notifier to use for sending notifications.
-     * @param checkerConfig Configuration settings for the checker.
+     * @param httpFetcher     The HTTP fetcher to use for fetching web pages.
+     * @param notifier        The notifier to use for sending notifications.
+     * @param cooldownService The cooldown service to use for filtering products.
+     * @param checkerConfig   Configuration settings for the checker.
      */
     protected AbstractChecker(HttpFetcher httpFetcher,
                               Notifier notifier,
@@ -63,12 +64,25 @@ public abstract class AbstractChecker implements Checker {
         List<Product> offCooldownProducts = cooldownService.filter(productList);
         if (offCooldownProducts.isEmpty()) return;
 
-        logger.info("Sending notification for {} items", offCooldownProducts.size());
-        notifier.send(checkerConfig.name() + " is in stock with " + offCooldownProducts.size() + " items",
-                offCooldownProducts);
+        notifyAndRefreshCooldown(offCooldownProducts);
+    }
 
-        offCooldownProducts.forEach(cooldownService::setOrRefreshCooldown);
+    /**
+     * Retrieves the name of the checker.
+     *
+     * @return The name of the checker.
+     */
+    public String getName() {
+        return checkerConfig.name();
+    }
 
+    /**
+     * Retrieves the checker configuration.
+     *
+     * @return The checker configuration.
+     */
+    protected CheckerConfig getCheckerConfig() {
+        return checkerConfig;
     }
 
     /**
@@ -84,7 +98,8 @@ public abstract class AbstractChecker implements Checker {
             logger.warn("Fetch returned null for {}, skipping", checkerConfig.name());
         }
         else if (response.getStatusCode().value() == 200) {
-            filteredProductList.addAll(getAndFilterItemsList(response.getBody()));
+            List<Product> unfilteredProductList = getUnfilteredItemList(response.getBody());
+            filteredProductList.addAll(filterByRegex(unfilteredProductList));
         }
         else if (response.getStatusCode().value() >= 500) {
             logger.info("Server error while fetching {}: {}", checkerConfig.name(), response.getStatusCode().value());
@@ -96,13 +111,12 @@ public abstract class AbstractChecker implements Checker {
     }
 
     /**
-     * Retrieves and filters the list of products from the HTTP response based on checker config regex.
+     * Filters the list of products based on checker config regex.
      *
-     * @param response The HTTP response containing the search results page.
+     * @param unfilteredProductList The unfiltered list of products.
      * @return A list of filtered products.
      */
-    private List<Product> getAndFilterItemsList(String response) {
-        List<Product> unfilteredProductList = getUnfilteredItemList(response);
+    private List<Product> filterByRegex(List<Product> unfilteredProductList) {
         if (checkerConfig.regexFilter() != null && !checkerConfig.regexFilter().isBlank()) {
             return unfilteredProductList.stream()
                     .filter(item -> item.name().matches(checkerConfig.regexFilter()))
@@ -112,15 +126,13 @@ public abstract class AbstractChecker implements Checker {
     }
 
     /**
-     * Retrieves the name of the checker.
+     * Sends a notification for the given products and refreshes their cooldowns.
      *
-     * @return The name of the checker.
+     * @param products The products to notify about and refresh cooldowns for.
      */
-    public String getName() {
-        return checkerConfig.name();
-    }
-
-    protected CheckerConfig getCheckerConfig() {
-        return checkerConfig;
+    private void notifyAndRefreshCooldown(List<Product> products) {
+        logger.info("Sending notification for {} items", products.size());
+        notifier.send(checkerConfig.name() + " is in stock with " + products.size() + " items", products);
+        products.forEach(cooldownService::setOrRefreshCooldown);
     }
 }
