@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.http.ResponseEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,17 +56,19 @@ public abstract class AbstractChecker implements Checker {
     @Override
     public void check() {
         List<Product> productList = getFilteredItemList();
-        if (!productList.isEmpty()) {
-            logger.info("Found {} items for product {}", productList.size(), checkerConfig.name());
+        if (productList.isEmpty()) return;
+        
+        logger.info("Found {} items for product {}", productList.size(), checkerConfig.name());
 
-            List<Product> offCooldownProducts = cooldownService.filter(productList);
+        List<Product> offCooldownProducts = cooldownService.filter(productList);
+        if (offCooldownProducts.isEmpty()) return;
 
-            logger.info("Sending notification for {} items", offCooldownProducts.size());
-            notifier.send(checkerConfig.name() + " is in stock with " + offCooldownProducts.size() + " items",
-                    offCooldownProducts);
+        logger.info("Sending notification for {} items", offCooldownProducts.size());
+        notifier.send(checkerConfig.name() + " is in stock with " + offCooldownProducts.size() + " items",
+                offCooldownProducts);
 
-            offCooldownProducts.forEach(cooldownService::setOrRefreshCooldown);
-        }
+        offCooldownProducts.forEach(cooldownService::setOrRefreshCooldown);
+
     }
 
     /**
