@@ -10,10 +10,13 @@ import app.fetcher.HttpFetcher;
 import app.notifier.Notifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestClient;
 
@@ -29,6 +32,8 @@ import java.util.function.Function;
 @EnableScheduling
 @Configuration
 public class AppConfig {
+
+    private static final Logger RESTCLIENT_LOGGER = LoggerFactory.getLogger("app.fetcher.RestClient");
 
     /**
      * Creates a list of checkers based on configuration and dependencies.
@@ -67,6 +72,18 @@ public class AppConfig {
 
     @Bean
     public RestClient restClient(RestClient.Builder builder) {
-        return builder.build();
+        return builder
+                .defaultStatusHandler(HttpStatusCode::isError,
+                        (request, response) -> {
+                            if (response.getStatusCode().is4xxClientError()) {
+                                RESTCLIENT_LOGGER.error("Client error when fetching {}: {}",
+                                        request.getURI(), response.getStatusCode());
+                            }
+                            else {
+                                RESTCLIENT_LOGGER.info("Server error when fetching {}: {}",
+                                        request.getURI(), response.getStatusCode());
+                            }
+                        })
+                .build();
     }
 }

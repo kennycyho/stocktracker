@@ -35,13 +35,6 @@ public class HttpFetcher {
         ResponseEntity<String> response = null;
         try {
             response = restClient.get().uri(url).retrieve().toEntity(String.class);
-
-            if (response.getStatusCode().value() >= 500) {
-                logger.info("Server error while fetching {}: {}", url, response.getStatusCode().value());
-            }
-            else if (response.getStatusCode().value() != 200) {
-                logger.error("Error while fetching {}: {}", url, response.getStatusCode().value());
-            }
         }
         catch (Exception e) {
             logger.error("Url could not be fetched: {}", url, e);
