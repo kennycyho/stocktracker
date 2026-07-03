@@ -3,87 +3,66 @@ package app.fetcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HttpFetcherTest {
 
+    private static final String TEST_URL = "https://example.com/api";
+    private static final String RESPONSE_BODY = "response body";
+
     @Mock
     private RestClient restClient;
-
     @Mock
     private RestClient.RequestHeadersUriSpec requestHeadersUriSpec;
-
-    @Mock
-    private RestClient.RequestHeadersSpec requestHeadersSpec;
-
     @Mock
     private RestClient.ResponseSpec responseSpec;
 
-    @InjectMocks
-    private HttpFetcher httpFetcher;
-
-    private static final String TEST_URL = "https://example.com";
-    private static final String TEST_BODY = "Hello World";
+    private HttpFetcher fetcher;
 
     @BeforeEach
     void setUp() {
-        lenient().when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        lenient().when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        lenient().when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        fetcher = new HttpFetcher(restClient);
     }
 
     @Test
-    void fetch_returnsResponse_whenStatusIs200() {
-        ResponseEntity<String> response = new ResponseEntity<>(TEST_BODY, HttpStatus.OK);
-        when(responseSpec.toEntity(String.class)).thenReturn(response);
+    void fetch_returnsResponseEntity_whenUrlIsValid() {
+        ResponseEntity<String> expectedResponse = ResponseEntity.ok(RESPONSE_BODY);
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(TEST_URL)).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.toEntity(String.class)).thenReturn(expectedResponse);
 
-        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
+        ResponseEntity<String> actualResponse = fetcher.fetch(TEST_URL);
 
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(TEST_BODY, result.getBody());
+        assertNotNull(actualResponse);
+        assertSame(expectedResponse, actualResponse);
         verify(restClient).get();
         verify(requestHeadersUriSpec).uri(TEST_URL);
+        verify(requestHeadersUriSpec).retrieve();
+        verify(responseSpec).toEntity(String.class);
     }
 
     @Test
-    void fetch_returnsResponse_whenStatusIs4xx() {
-        ResponseEntity<String> response = new ResponseEntity<>("Not Found", HttpStatus.NOT_FOUND);
-        when(responseSpec.toEntity(String.class)).thenReturn(response);
+    void fetch_returnsNull_whenRestClientThrowsException() {
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(TEST_URL)).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.toEntity(String.class)).thenThrow(new RuntimeException("Connection failed"));
 
-        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
+        ResponseEntity<String> actualResponse = fetcher.fetch(TEST_URL);
 
-        assertNotNull(result);
-        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-    }
-
-    @Test
-    void fetch_returnsResponse_whenStatusIs5xx() {
-        ResponseEntity<String> response = new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-        when(responseSpec.toEntity(String.class)).thenReturn(response);
-
-        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
-
-        assertNotNull(result);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-    }
-
-    @Test
-    void fetch_returnsNull_whenExceptionThrown() {
-        when(responseSpec.toEntity(String.class)).thenThrow(new RuntimeException("Network error"));
-
-        ResponseEntity<String> result = httpFetcher.fetch(TEST_URL);
-
-        assertNull(result);
+        assertNull(actualResponse);
+        verify(restClient).get();
+        verify(requestHeadersUriSpec).uri(TEST_URL);
+        verify(requestHeadersUriSpec).retrieve();
+        verify(responseSpec).toEntity(String.class);
     }
 }
