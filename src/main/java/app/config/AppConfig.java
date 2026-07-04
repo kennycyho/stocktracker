@@ -70,6 +70,14 @@ public class AppConfig {
                 .toList();
     }
 
+    /**
+     * Configures a RestClient with error handling for HTTP status codes.
+     * <p>
+     * Logs client errors (4xx) and server errors (5xx) with appropriate severity levels.
+     *
+     * @param builder the RestClient builder to configure
+     * @return a configured RestClient instance
+     */
     @Bean
     public RestClient restClient(RestClient.Builder builder) {
         return builder

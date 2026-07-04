@@ -12,7 +12,10 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
- * Configuration for Redis.
+ * Configuration class for Redis integration.
+ * <p>
+ * Configures a RedisTemplate with JSON serialization for {@link Cooldown} entities,
+ * using Jackson with JavaTimeModule for proper LocalDateTime handling.
  */
 @Configuration
 public class RedisConfig {
