@@ -90,6 +90,8 @@ public abstract class AbstractChecker implements Checker {
         if (filteredProductList.isEmpty()) return;
 
         List<Product> offCooldownProducts = cooldownService.filter(filteredProductList);
+        logger.debug("Off cooldown list contains {} items for product {}",
+                filteredProductList.size(), checkerConfig.name());
         if (offCooldownProducts.isEmpty()) return;
 
         notifyAndRefreshCooldown(offCooldownProducts);
