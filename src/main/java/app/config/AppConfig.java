@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 /**
@@ -93,5 +95,15 @@ public class AppConfig {
                             }
                         })
                 .build();
+    }
+
+    /**
+     * Configures a thread pool executor for running checkers.
+     *
+     * @return an executor service for running checkers
+     */
+    @Bean
+    public ExecutorService executorService() {
+        return Executors.newVirtualThreadPerTaskExecutor();
     }
 }

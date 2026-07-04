@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Scheduler service responsible for running checks at a fixed interval.
@@ -21,7 +20,7 @@ public class Scheduler {
     /**
      * Virtual thread executor for running checkers concurrently.
      */
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService executor;
 
     /**
      * List of checkers to be run by the scheduler.
@@ -29,12 +28,14 @@ public class Scheduler {
     private final List<Checker> checkers;
 
     /**
-     * Constructs a new Scheduler with the given list of checkers.
+     * Constructs a new Scheduler with the given list of checkers and executor.
      *
      * @param checkers the list of checkers
+     * @param executor the executor service for running checkers
      */
-    public Scheduler(List<Checker> checkers) {
+    public Scheduler(List<Checker> checkers, ExecutorService executor) {
         this.checkers = checkers;
+        this.executor = executor;
     }
 
     /**
