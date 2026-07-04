@@ -141,8 +141,19 @@ public abstract class AbstractChecker implements Checker {
         return checkerConfig;
     }
 
+    /**
+     * Runs the checker.
+     * <p>
+     * This method invokes the {@link #check()} method to perform the check.
+     * Any exceptions thrown during the check are caught and logged.
+     */
     @Override
     public void run() {
-        check();
+        try {
+            check();
+        }
+        catch (Exception e) {
+            logger.error("Checker {} failed during execution", checkerConfig.name(), e);
+        }
     }
 }
