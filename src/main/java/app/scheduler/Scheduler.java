@@ -7,6 +7,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Scheduler service responsible for running checks at a fixed interval.
@@ -15,6 +17,11 @@ import java.util.List;
 public class Scheduler {
 
     private final Logger logger = LoggerFactory.getLogger(Scheduler.class);
+
+    /**
+     * Virtual thread executor for running checkers concurrently.
+     */
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     /**
      * List of checkers to be run by the scheduler.
@@ -36,13 +43,8 @@ public class Scheduler {
     @Scheduled(fixedDelayString = "${checker.interval-ms}")
     public void runChecks() {
         for (Checker checker : checkers) {
-            try {
-                logger.info("Running checker: {}", checker.getName());
-                checker.check();
-            }
-            catch (Exception e) {
-                logger.error("Checker {} threw an unexpected exception", checker.getName(), e);
-            }
+            logger.info("Running checker: {}", checker.getName());
+            executor.submit(checker);
         }
     }
 }

@@ -96,24 +96,6 @@ public abstract class AbstractChecker implements Checker {
     }
 
     /**
-     * Retrieves the name of the checker.
-     *
-     * @return The name of the checker.
-     */
-    public String getName() {
-        return checkerConfig.name();
-    }
-
-    /**
-     * Retrieves the checker configuration.
-     *
-     * @return The checker configuration.
-     */
-    protected CheckerConfig getCheckerConfig() {
-        return checkerConfig;
-    }
-
-    /**
      * Filters the list of products based on checker config regex.
      *
      * @param unfilteredProductList The unfiltered list of products.
@@ -137,5 +119,28 @@ public abstract class AbstractChecker implements Checker {
         logger.info("Sending notification for {} items", products.size());
         notifier.send(checkerConfig.name() + " is in stock with " + products.size() + " items", products);
         products.forEach(cooldownService::setOrRefreshCooldown);
+    }
+
+    /**
+     * Retrieves the name of the checker.
+     *
+     * @return The name of the checker.
+     */
+    public String getName() {
+        return checkerConfig.name();
+    }
+
+    /**
+     * Retrieves the checker configuration.
+     *
+     * @return The checker configuration.
+     */
+    protected CheckerConfig getCheckerConfig() {
+        return checkerConfig;
+    }
+
+    @Override
+    public void run() {
+        check();
     }
 }
