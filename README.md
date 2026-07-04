@@ -36,8 +36,9 @@ fully containerized, config-driven deployment model that requires no code change
   `CooldownCacheService`, falling back to Postgres on a cache miss and repopulating the cache afterward. Every Redis
   operation is wrapped in try/catch that logs and falls back to the database rather than failing the request, a
   deliberate resilience choice so a Redis outage degrades performance, not correctness.
-- **Fault-isolated scheduled execution.** `Scheduler` iterates all registered checkers on a fixed delay and catches
-  exceptions per-checker, so one site's parsing failure (e.g., a broken CSS selector after a redesign) never blocks or
+- **Fault-isolated, parallel scheduled execution.** `Scheduler` iterates all registered checkers on a fixed delay and
+  submits each one to a virtual-thread executor, so checkers run concurrently rather than sequentially. Exceptions are
+  caught per-checker, so one site's parsing failure (e.g., a broken CSS selector after a redesign) never blocks or
   crashes the checks for every other tracked site.
 - **Security-conscious multi-stage Docker build.** The image separates a Maven build stage from a minimal
   `eclipse-temurin:21-jre-alpine` runtime stage, runs as a non-root user, and pulls all secrets (mail credentials, DB
