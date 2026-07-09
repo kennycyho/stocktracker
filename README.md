@@ -14,11 +14,11 @@ fully containerized, config-driven deployment model that requires no code change
 | Category                | Technology                                                                             |
 |-------------------------|----------------------------------------------------------------------------------------|
 | **Language / Runtime**  | Java 21                                                                                |
-| **Framework**           | Spring Boot 3.3 (Web, Scheduling, Mail, Data JPA, Data Redis)                          |
-| **Persistence**         | PostgreSQL 16 (via Spring Data JPA / Hibernate)                                        |
-| **Caching**             | Redis 7 (Spring Data Redis, JSON-serialized entities)                                  |
-| **Testing**             | JUnit 5, Mockito 5, Spring Boot Testing                                                |
-| **Containerization**    | Docker (multi-stage build), Docker Compose                                             |
+| **Framework**           | Spring Boot (Web, Scheduling, Mail, Data JPA, Data Redis)                              |
+| **Persistence**         | PostgreSQL (via Spring Data JPA / Hibernate)                                           |
+| **Caching**             | Redis (Spring Data Redis, JSON-serialized entities)                                    |
+| **Testing**             | JUnit, Mockito, Spring Boot Testing                                                    |
+| **Containerization**    | Docker, Docker Compose                                                                 |
 | **CI-oriented Tooling** | Dedicated `compose.test.yaml` + shell script for isolated containerized test runs      |
 | **Config**              | Externalized via `application.properties`, `.env`, and a hot-swappable `checkers.json` |
 
