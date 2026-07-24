@@ -26,7 +26,7 @@ class SchedulerTest {
         when(checker2.getName()).thenReturn("Checker2");
 
         executor = mock(ExecutorService.class);
-        scheduler = new Scheduler(List.of(checker1, checker2), executor);
+        scheduler = new Scheduler(List.of(checker1, checker2), executor, 0);
     }
 
     @Test
@@ -39,7 +39,7 @@ class SchedulerTest {
 
     @Test
     void runChecks_withEmptyCheckerList_doesNotSubmitAnything() {
-        Scheduler emptyScheduler = new Scheduler(List.of(), executor);
+        Scheduler emptyScheduler = new Scheduler(List.of(), executor, 0);
 
         emptyScheduler.runChecks();
 
@@ -61,7 +61,7 @@ class SchedulerTest {
         when(throwingChecker.getName()).thenReturn("ThrowingChecker");
 
         Scheduler mixedScheduler = new Scheduler(
-                List.of(throwingChecker, checker1), executor);
+                List.of(throwingChecker, checker1), executor, 0);
 
         assertDoesNotThrow(mixedScheduler::runChecks);
 
