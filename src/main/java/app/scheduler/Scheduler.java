@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Scheduler service responsible for running checks at a fixed interval.
+ * Scheduler service responsible for running checks on a cron schedule (hourly 6 AM - 9 PM PST).
  */
 @Service
 public class Scheduler {
@@ -59,10 +59,10 @@ public class Scheduler {
     }
 
     /**
-     * Runs checks for all registered checkers at a fixed interval,
+     * Runs checks for all registered checkers on a cron schedule (hourly 6 AM - 9 PM PST),
      * with a random delay between each checker submission.
      */
-    @Scheduled(fixedDelayString = "${checker.interval-ms}")
+    @Scheduled(cron = "${checker.cron}", zone = "America/Los_Angeles")
     public void runChecks() {
         for (int i = 0; i < checkers.size(); i++) {
             Checker checker = checkers.get(i);

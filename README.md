@@ -36,7 +36,7 @@ fully containerized, config-driven deployment model that requires no code change
   `CooldownCacheService`, falling back to Postgres on a cache miss and repopulating the cache afterward. Every Redis
   operation is wrapped in try/catch that logs and falls back to the database rather than failing the request, a
   deliberate resilience choice so a Redis outage degrades performance, not correctness.
-- **Fault-isolated, parallel scheduled execution.** `Scheduler` iterates all registered checkers on a fixed delay and
+- **Fault-isolated, parallel scheduled execution.** `Scheduler` iterates all registered checkers on a cron schedule (hourly 6 AM–9 PM PST) and
   submits each one to a virtual-thread executor, so checkers run concurrently rather than sequentially. Exceptions are
   caught per-checker, so one site's parsing failure (e.g., a broken CSS selector after a redesign) never blocks or
   crashes the checks for every other tracked site.
@@ -84,7 +84,7 @@ down.
 
 Key tunables live in `src/main/resources/application.properties`:
 
-- `checker.interval-ms` — how often all checkers run (default: 30 minutes)
+- `checker.cron` — cron schedule for checker runs (default: hourly 6 AM–9 PM PST, `0 0 6-21 * * ?`)
 - `cooldown.interval-ms` — minimum time before re-notifying on the same product (default: 1 week)
 - `app.checkers-file` — path to the mounted `checkers.json`
 
