@@ -3,6 +3,7 @@ package app.scheduler;
 import app.checker.Checker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ public class Scheduler {
      * @param checkers the list of checkers
      * @param executor the executor service for running checkers
      */
+    @Autowired
     public Scheduler(List<Checker> checkers, ExecutorService executor) {
         this(checkers, executor, MAX_STARTUP_DELAY_MS);
     }
@@ -70,7 +72,8 @@ public class Scheduler {
                 try {
                     int delay = ThreadLocalRandom.current().nextInt(startupDelayMaxMs + 1);
                     Thread.sleep(delay);
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     logger.warn("Scheduler sleep interrupted", e);
                     break;
