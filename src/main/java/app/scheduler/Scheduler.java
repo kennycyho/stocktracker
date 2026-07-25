@@ -4,6 +4,7 @@ import app.checker.Checker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -29,30 +30,19 @@ public class Scheduler {
      */
     private final List<Checker> checkers;
 
-    private static final int MAX_STARTUP_DELAY_MS = 60_000;
-
     private final int startupDelayMaxMs;
 
     /**
      * Constructs a new Scheduler with the given list of checkers and executor.
-     * Default startup delay is 60 seconds.
      *
-     * @param checkers the list of checkers
-     * @param executor the executor service for running checkers
+     * @param checkers           the list of checkers
+     * @param executor           the executor service for running checkers
+     * @param startupDelayMaxMs  maximum random delay in ms before each checker starts
      */
     @Autowired
-    public Scheduler(List<Checker> checkers, ExecutorService executor) {
-        this(checkers, executor, MAX_STARTUP_DELAY_MS);
-    }
-
-    /**
-     * Constructs a new Scheduler with a configurable startup delay.
-     *
-     * @param checkers          the list of checkers
-     * @param executor          the executor service for running checkers
-     * @param startupDelayMaxMs maximum random delay in ms before each checker starts
-     */
-    Scheduler(List<Checker> checkers, ExecutorService executor, int startupDelayMaxMs) {
+    public Scheduler(List<Checker> checkers,
+                     ExecutorService executor,
+                     @Value("${scheduler.startup-delay-max-ms}") int startupDelayMaxMs) {
         this.checkers = checkers;
         this.executor = executor;
         this.startupDelayMaxMs = startupDelayMaxMs;
