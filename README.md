@@ -64,9 +64,8 @@ fully containerized, config-driven deployment model that requires no code change
    cp checkers.json.example checkers.json
    ```
 
-3. Build the image and start the stack (app + Postgres + Redis):
+3. Start the stack (app + Postgres + Redis):
    ```bash
-   docker build -t ghcr.io/kennycyho/stocktracker:latest .
    docker compose up -d
    ```
 
